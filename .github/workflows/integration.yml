@@ -1,3 +1,17 @@
+###############################################################################
+#
+#   GitHub Actions CI configuration for integration tests
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 14-12-2021
+#   LICENSE: MIT
+#
+###############################################################################
+---
+
 name: integration
 
 on:
@@ -33,5 +47,10 @@ jobs:
           conda info -a
           conda list
 
-      #- name: Run test script for snakemake DAG
-      #  run: bash tests/test_create_dag_image/test.sh
+      - name: Create the main configfile
+        run: |
+          python scripts/create-main-config-file.py \
+          --config-template .test/integration/MAPP/config_template_1.yml \
+          --pipeline-configfile configs/config.yml
+
+...
