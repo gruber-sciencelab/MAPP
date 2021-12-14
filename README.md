@@ -1,4 +1,4 @@
-<img align="right" width="60" height="60" src="images/mapp_logo.png">
+<img align="right" width="48" height="60" src="images/mapp_logo.png">
 
 [![Build](https://git.scicore.unibas.ch/zavolan_group/pipelines/mapp/badges/clean/pipeline.svg)](https://git.scicore.unibas.ch/zavolan_group/pipelines/mapp/-/pipelines)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)

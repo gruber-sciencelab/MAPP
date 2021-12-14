@@ -32,5 +32,6 @@ dependencies:
   - htseq=0.12.4
   - pymongo=3.2.2
   - jinja2=2.10
+  - bzip2=1.0.8
 
 ...
