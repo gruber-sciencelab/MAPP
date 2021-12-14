@@ -19,5 +19,6 @@ channels:
 
 dependencies:
   - bash=4.4.18
+  - bzip2=1.0.8
 
 ...
