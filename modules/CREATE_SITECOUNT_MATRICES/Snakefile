@@ -1,0 +1,725 @@
+##############################################################################
+#
+#   Snakemake pipeline:
+#   Create k-mer/PWM sitecount matrices around a set of bed-formatted regions
+#   within a specified range (window-wise resolution).
+#   
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 09-04-2020
+#   LICENSE: Apache_2.0
+#
+##############################################################################
+
+# imports
+import sys
+import os
+import glob
+import traceback
+import errno
+
+# local rules
+localrules: CSM_all, CSM_create_outdir, CSM_create_links_to_matrices
+
+def CSM_generate_sliding_windows_IDs(win_range):
+    """
+    Generate name encodings for the sitecount matrices within a specified
+    range (sliding-window approach).
+    """
+    up = int(win_range.split("-")[0])
+    down = int(win_range.split("-")[1])
+    # generate window ranges:
+    windows = []
+    s = -1 * int(up)
+    e = s + int(config["CSM_window_size"])
+    while e <= int(down):
+        windows.append((s,e))
+        s = s + int(config["CSM_window_step"])
+        e = e + int(config["CSM_window_step"])
+    #convert to encoded names:
+    window_names = []
+    for win in windows:
+        if win[0] < 0 and win[1] <= 0: #upstream the site
+            name = "u" + str(-1 * win[0]) + "to" + str(-1 * win[1]) + ".d0to0"
+            window_names.append(name)
+        elif win[0] >= 0 and win[1] > 0: #downstream the site
+            name = "u0to0.d" + str(win[0]) + "to" + str(win[1])
+            window_names.append(name)
+        else: #window goes through the site
+            name = "u" + str(-1 * win[0]) + "to0.d0to" + str(win[1])
+            window_names.append(name)
+    return window_names
+
+def CSM_generate_all_matrices_wildcards():
+    """
+    Generate a dictionary of sorted lists based on the information in
+    Snakemake YAML config. Necessary for proper wildcards evaluation.
+    """
+    fields = {"region_IDs": [], "matrix_IDs": [], "output_dir": []}
+    # select one region
+    for region in sorted(config["CSM_regions_ranges"].keys()):
+        win_range = config["CSM_regions_ranges"][region]
+        # generate all windows in specified range for this region
+        matrix_IDs = CSM_generate_sliding_windows_IDs(win_range)
+        # populate the dictionary
+        for matrix in matrix_IDs:
+            fields["region_IDs"].append(region)
+            fields["matrix_IDs"].append(matrix)
+    # in the end all lists must have the same length for zip function
+    # to work in the later evaluation
+    for i in range(0, len(fields["region_IDs"])):
+        fields["output_dir"].append(config["CSM_outdir"])
+    return fields
+
+def CSM_gather_motifs_names(pwm_dir):
+    """
+    Return the list of names of all PWM files in the PWM directory
+    """
+    if not os.path.isdir(pwm_dir):
+        raise FileNotFoundError(
+            errno.ENOENT,
+            os.strerror(errno.ENOENT),
+            pwm_dir
+        )
+    regex = os.path.join(
+        pwm_dir,
+        "*"
+    )
+    l = [i.split("/")[-1] for i in glob.glob(regex)]
+    return(l)
+
+def CSM_get_abspath(p):
+    """
+    MotEvo requires that its input files are in absolute paths;
+    Adjust them if needed
+    """
+    return(p if p[0] == os.sep else os.path.abspath(p))
+
+##############################################################################
+### Target rule with final output of the pipeline
+##############################################################################
+
+rule CSM_all:
+    """
+    Gathering all output
+    """
+    input:
+        LIST_sitecount_matrices_links = expand(
+            os.path.join(
+                "{CSM_outdir}",
+                "{CSM_region_id}",
+                "{CSM_window_id}",
+                "matrix.tsv"
+            ),
+            zip,
+            CSM_outdir = CSM_generate_all_matrices_wildcards()["output_dir"],
+            CSM_region_id = CSM_generate_all_matrices_wildcards()["region_IDs"],
+            CSM_window_id = CSM_generate_all_matrices_wildcards()["matrix_IDs"]
+        )
+
+##############################################################################
+### Create directories for the results
+##############################################################################
+
+rule CSM_create_outdir:
+    """
+    Preparing directories for the results
+    """
+    output:
+        TEMP_ = temp(
+            os.path.join(
+                "{CSM_outdir}",
+                "CSM_outdir"
+            )
+        )
+
+    params:
+        DIR_output_dir = "{CSM_outdir}",
+        LOG_cluster_log = os.path.join(
+            "{CSM_outdir}",
+            "cluster_log"
+        ),
+        LOG_local_log = os.path.join(
+            "{CSM_outdir}",
+            "local_log"
+        )
+
+    threads: 1
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        mkdir -p {params.DIR_output_dir}; \
+        mkdir -p {params.LOG_cluster_log}; \
+        mkdir -p {params.LOG_local_log}; \
+        touch {output.TEMP_}
+        """
+
+##############################################################################
+### Extract window-wise information
+##############################################################################
+
+rule CSM_extract_window_coord_and_sequence:
+    """
+    Extracting information for a given window:
+    * coordinates in bed format
+    * sequences in fasta format
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{CSM_outdir}",
+            "CSM_outdir"
+        ),
+        BED_region = lambda wildcards: \
+            config["CSM_regions_files"][wildcards.CSM_region_id],
+        FASTA_genome = config["CSM_genomic_sequence"],
+        SCRIPT_ = os.path.join(
+            config["CSM_scripts_dir"],
+            "extract-window-information.py"
+        )
+
+    output:
+        FASTA_genomic_sequence = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "sequences.fasta"
+        )
+
+    params:
+        STR_window_id = "{CSM_window_id}",
+        DIR_window_path = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}"
+        ),
+        LOG_cluster_log = os.path.join(
+            "{CSM_outdir}",
+            "cluster_log",
+            "CSM_extract_window_coord_and_sequence.{CSM_region_id}.{CSM_window_id}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_extract_window_coord_and_sequence.{CSM_region_id}.{CSM_window_id}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_extract_window_coord_and_sequence.{CSM_region_id}.{CSM_window_id}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_extract_window_coord_and_sequence.{CSM_region_id}.{CSM_window_id}.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --window-id {params.STR_window_id} \
+        --bed {input.BED_region} \
+        --genome {input.FASTA_genome} \
+        --outdir {params.DIR_window_path} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Create k-mer sitecount matrices
+##############################################################################
+
+rule CSM_create_kmer_sitecount_matrices:
+    """
+    Generating k-mer raw counts sitecount matrices
+    """
+    input:
+        FASTA_genomic_sequence = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "sequences.fasta"
+        ),
+        SCRIPT_ = os.path.join(
+            config["CSM_scripts_dir"],
+            "create-kmers-sitecount-matrix.py"
+        )
+
+    output:
+        TSV_sitecount_matrix = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "kmers_matrix.tsv"
+        )
+
+    params:
+        STR_window_id = "{CSM_window_id}",
+        INT_kmer_min = config["CSM_kmer_min"],
+        INT_kmer_max = config["CSM_kmer_max"],
+        LOG_cluster_log = os.path.join(
+            "{CSM_outdir}",
+            "cluster_log",
+            "CSM_create_kmer_sitecount_matrices.{CSM_region_id}.{CSM_window_id}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_create_kmer_sitecount_matrices.{CSM_region_id}.{CSM_window_id}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_create_kmer_sitecount_matrices.{CSM_region_id}.{CSM_window_id}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_create_kmer_sitecount_matrices.{CSM_region_id}.{CSM_window_id}.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --sequences {input.FASTA_genomic_sequence} \
+        --matrix {output.TSV_sitecount_matrix} \
+        --window-id {params.STR_window_id} \
+        --kmer-min {params.INT_kmer_min} \
+        --kmer-max {params.INT_kmer_max} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Prepare MotEvo parameters
+##############################################################################
+
+rule CSM_prepare_MotEvo_parameters:
+    """
+    Prepare text file with parameters for MotEvo runs
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{CSM_outdir}",
+            "CSM_outdir"
+        )
+
+    output:
+        TXT_MotEvo_parameters = os.path.join(
+            "{CSM_outdir}",
+            "MotEvo_parameters.txt"
+        )
+
+    params:
+        FLOAT_MotEvo_bg_binding_prior = config["CSM_MotEvo_bg_binding_prior"],
+        FLOAT_MotEvo_min_binding_posterior = config["CSM_MotEvo_min_binding_posterior"],
+        INT_MotEvo_Markov_chain_order = config["CSM_MotEvo_Markov_chain_order"],
+        LOG_cluster_log = os.path.join(
+            "{CSM_outdir}",
+            "cluster_log",
+            "CSM_prepare_MotEvo_parameters.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_prepare_MotEvo_parameters.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_prepare_MotEvo_parameters.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_prepare_MotEvo_parameters.benchmark.log"
+        )
+
+    run:
+        with open(output.TXT_MotEvo_parameters, "w") as ofile, open(log.LOG_local_stderr, "w") as logfile:
+            try:
+                # =================================
+                bgprior = params.FLOAT_MotEvo_bg_binding_prior
+                parampath = output.TXT_MotEvo_parameters
+                genome_tag = "MOTEVO"
+                markovorderbg = params.INT_MotEvo_Markov_chain_order
+                bga = 0.25
+                bgt = 0.25
+                bgc = 0.25
+                bgg = 0.25
+                restrictparses = 0
+                printsiteals = 1
+                minposterior = params.FLOAT_MotEvo_min_binding_posterior
+                # =================================
+                tree = str('TREE (' + genome_tag + ':1);')
+                with open(parampath, 'w') as paramfile:
+                    paramfile.write(
+                        'refspecies ' + genome_tag + os.linesep +
+                        tree + os.linesep +
+                        'Mode TFBS' + os.linesep +
+                        'EMprior 0' + os.linesep +
+                        'markovorderBG ' + str(markovorderbg) + os.linesep +
+                        'bgprior ' + str(bgprior) + os.linesep +
+                        'bg A ' + str(bga) + os.linesep +
+                        'bg T ' + str(bgt) + os.linesep +
+                        'bg G ' + str(bgg) + os.linesep +
+                        'bg C ' + str(bgc) + os.linesep +
+                        'restrictparses ' + str(restrictparses) + os.linesep +
+                        'singlestrand 1' + os.linesep +
+                        'sitefile posterior_sites' + os.linesep +
+                        'priorfile posteriors' + os.linesep +
+                        'printsiteals ' + str(printsiteals) + os.linesep +
+                        'minposterior ' + str(minposterior) + os.linesep)
+            except Exception:
+                traceback.print_exc(file = logfile)
+                raise Exception(
+                    "Workflow error at rule: CSM_prepare_MotEvo_parameters"
+                )
+
+##############################################################################
+### Reformat FASTA headers for MotEvo
+##############################################################################
+
+rule CSM_prepare_sequences_for_MotEvo:
+    """
+    Reformatting FASTA sequence headers so that they fit what MotEvo expects
+    """
+    input:
+        FASTA_genomic_sequence = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "sequences.fasta"
+        ),
+
+    output:
+        FASTA_MotEvo_input = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "MotEvo_sequences.fasta"
+        ),
+
+    params:
+        STR_MotEvo_fasta_header_tag = ">>MOTEVO_",
+        LOG_cluster_log = os.path.join(
+            "{CSM_outdir}",
+            "cluster_log",
+            "CSM_prepare_sequences_for_MotEvo.{CSM_region_id}.{CSM_window_id}.log"
+        )
+
+    threads: 1
+
+    log:
+        # stdout is used by the sed command
+        LOG_local_stderr = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_prepare_sequences_for_MotEvo.{CSM_region_id}.{CSM_window_id}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_prepare_sequences_for_MotEvo.{CSM_region_id}.{CSM_window_id}.benchmark.log"
+        )
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        sed 's/>/{params.STR_MotEvo_fasta_header_tag}/' \
+        {input.FASTA_genomic_sequence} \
+        1> {output.FASTA_MotEvo_input} \
+        2> {log.LOG_local_stderr};
+        """
+
+##############################################################################
+### Run MotEvo
+##############################################################################
+
+rule CSM_MotEvo_analysis:
+    """
+    Running MotEvo for a given set of FASTA sequences and a given PWM
+    """
+    input:
+        TXT_MotEvo_parameters = os.path.join(
+            "{CSM_outdir}",
+            "MotEvo_parameters.txt"
+        ),
+        DIR_pwm = os.path.join(
+            config["CSM_pwm_directory"],
+            "{CSM_pwm_dir}",
+        ),
+        FASTA_MotEvo_input = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "MotEvo_sequences.fasta"
+        ),
+
+    output:
+        DIR_MotEvo_results_pwm = directory(os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "motevo",
+            "{CSM_pwm_dir}"
+        ))
+
+    params:
+        TXT_MotEvo_parameters_abspath = lambda wildcards: CSM_get_abspath(
+            os.path.join(
+                wildcards.CSM_outdir,
+                "MotEvo_parameters.txt",
+            )
+        ),
+        FASTA_MotEvo_input_abspath = lambda wildcards: CSM_get_abspath(
+            os.path.join(
+                wildcards.CSM_outdir,
+                wildcards.CSM_region_id,
+                wildcards.CSM_window_id,
+                "MotEvo_sequences.fasta",
+            )
+        ),
+        LOG_cluster_log = os.path.join(
+            "{CSM_outdir}",
+            "cluster_log",
+            "CSM_MotEvo_analysis.{CSM_region_id}.{CSM_window_id}.{CSM_pwm_dir}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_MotEvo_analysis.{CSM_region_id}.{CSM_window_id}.{CSM_pwm_dir}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_MotEvo_analysis.{CSM_region_id}.{CSM_window_id}.{CSM_pwm_dir}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_MotEvo_analysis.{CSM_region_id}.{CSM_window_id}.{CSM_pwm_dir}.benchmark.log"
+        )
+
+    conda:
+        "env/motevo.yml"
+
+    singularity:
+        "docker://zavolab/motevo:1.12_python3.6.8"
+
+    shell:
+        """
+        (mkdir -p {output.DIR_MotEvo_results_pwm} && \
+        cd {output.DIR_MotEvo_results_pwm} && \
+        motevo \
+        {params.FASTA_MotEvo_input_abspath} \
+        {params.TXT_MotEvo_parameters_abspath} \
+        {input.DIR_pwm}) \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Create PWM sitecount matrices
+##############################################################################
+
+rule CSM_create_MotEvo_sitecount_matrices:
+    """
+    Combining per-motif MotEvo results into a sitecount matrix
+    (for a given region / for a given window)
+    """
+    input:
+        DIR_MotEvo_results_pwm = lambda wildcards:
+            [os.path.join(
+                wildcards.CSM_outdir,
+                wildcards.CSM_region_id,
+                wildcards.CSM_window_id,
+                "motevo",
+                CSM_pwm_dir
+            ) for CSM_pwm_dir in CSM_gather_motifs_names(config["CSM_pwm_directory"])],
+        FASTA_MotEvo_input = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "MotEvo_sequences.fasta"
+        ),
+        SCRIPT_ = os.path.join(
+            config["CSM_scripts_dir"],
+            "merge-motevo-results.py"
+        )
+
+    output:
+        TSV_sitecount_matrix = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "pwms_matrix.tsv"
+        )
+
+    params:
+        STR_window_id = "{CSM_window_id}",
+        TSV_sitecount_matrix = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "pwms_matrix.tsv"
+        ),
+        DIR_MotEvo_results = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "motevo"
+        ),
+        LOG_cluster_log = os.path.join(
+            "{CSM_outdir}",
+            "cluster_log",
+            "CSM_create_MotEvo_sitecount_matrices.{CSM_region_id}.{CSM_window_id}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_create_MotEvo_sitecount_matrices.{CSM_region_id}.{CSM_window_id}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_create_MotEvo_sitecount_matrices.{CSM_region_id}.{CSM_window_id}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_create_MotEvo_sitecount_matrices.{CSM_region_id}.{CSM_window_id}.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --motevo-input-fasta {input.FASTA_MotEvo_input} \
+        --motevo-results-dir {params.DIR_MotEvo_results} \
+        --window-id {params.STR_window_id} \
+        --outfile {output.TSV_sitecount_matrix} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Create hard links
+##############################################################################
+
+rule CSM_create_links_to_matrices:
+    """
+    Creating hard links to the matrix TSV files
+    """
+    input:
+        TSV_sitecount_matrix = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            config["CSM_matrix_type"] + "_matrix.tsv"
+        )
+
+    output:
+        LINK_sitecount_matrix = os.path.join(
+            "{CSM_outdir}",
+            "{CSM_region_id}",
+            "{CSM_window_id}",
+            "matrix.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{CSM_outdir}",
+            "cluster_log",
+            "CSM_create_links_to_matrices.{CSM_region_id}.{CSM_window_id}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_create_links_to_matrices.{CSM_region_id}.{CSM_window_id}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_create_links_to_matrices.{CSM_region_id}.{CSM_window_id}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{CSM_outdir}",
+            "local_log",
+            "CSM_create_links_to_matrices.{CSM_region_id}.{CSM_window_id}.benchmark.log"
+        )
+
+    shell:
+        """
+        ln \
+        {input.TSV_sitecount_matrix} \
+        {output.LINK_sitecount_matrix} \
+        && \
+        sleep 1 \
+        && \
+        touch -h {output.LINK_sitecount_matrix} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """

@@ -1,0 +1,529 @@
+##############################################################################
+#
+#   Snakemake pipeline:
+#   MARA logistic regression model on exon inclusion.
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 09-04-2020
+#   LICENSE: Apache_2.0
+#
+##############################################################################
+
+# imports
+import sys
+import os
+
+# local rules
+localrules: MAE_all, MAE_create_outdir
+
+##############################################################################
+### Target rule with final output of the pipeline
+##############################################################################
+
+rule MAE_all:
+    """
+    Gathering all output
+    """
+    input:
+        TSV_collapsed_results_per_region = expand(
+            os.path.join(
+                "{MAE_output_dir}",
+                "{region}",
+                "collapsed_results.tsv"
+            ),
+            MAE_output_dir = config["MAE_outdir"],
+            region = config["MAE_sitecount_matrices"].keys()
+        )
+
+##############################################################################
+### Create directories for the results
+##############################################################################
+
+rule MAE_create_outdir:
+    """
+    Preparing directories for the results
+    """
+    output:
+        TEMP_ = temp(
+            os.path.join(
+                "{MAE_output_dir}",
+                "MAE_outdir"
+            )
+        )
+
+    params:
+        DIR_output_dir = "{MAE_output_dir}",
+        LOG_cluster_log = os.path.join(
+            "{MAE_output_dir}",
+            "cluster_log"
+        ),
+        LOG_local_log = os.path.join(
+            "{MAE_output_dir}",
+            "local_log"
+        )
+
+    threads: 1
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        mkdir -p {params.DIR_output_dir}; \
+        mkdir -p {params.LOG_cluster_log}; \
+        mkdir -p {params.LOG_local_log}; \
+        touch {output.TEMP_}
+        """
+
+##############################################################################
+### Filter exon inclusion table
+##############################################################################
+
+rule MAE_prepare_inclusion_table:
+    """
+    Filter values in the inclusion table for latter statistical model
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{MAE_output_dir}",
+            "MAE_outdir"
+        ),
+        TSV_inclusion_table = config["MAE_inclusion_table"],
+        SCRIPT_ = os.path.join(
+            config["MAE_scripts_dir"],
+            "prepare-inclusion-table.py"
+        )
+
+    output:
+        TSV_filtered_inclusion_table = os.path.join(
+            "{MAE_output_dir}",
+            "filtered_inclusion_table.tsv"
+        )
+
+    params:
+        FLOAT_minimal_expression = config["MAE_min_expression"],
+        LOG_cluster_log = os.path.join(
+            "{MAE_output_dir}",
+            "cluster_log",
+            "MAE_prepare_inclusion_table.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_prepare_inclusion_table.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_prepare_inclusion_table.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_prepare_inclusion_table.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --inclusion-table {input.TSV_inclusion_table} \
+        --filtered-inclusion-table {output.TSV_filtered_inclusion_table} \
+        --minimal-expression {params.FLOAT_minimal_expression} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Optimize parameters of the MARA model for exon inclusion:
+##############################################################################
+
+rule MAE_fit_model_parameters:
+    """
+    Optimizing maximum likelihood estimates of the parameters of the model
+    given the data (exon inclusion table + sitecount matrix)
+    """
+    input:
+        TSV_filtered_inclusion_table = os.path.join(
+            "{MAE_output_dir}",
+            "filtered_inclusion_table.tsv"
+        ),
+        TSV_sitecount_matrix = lambda wildcards: \
+            config["MAE_sitecount_matrices"][wildcards.region][wildcards.matrix],
+        SCRIPT_ = os.path.join(
+            config["MAE_scripts_dir"],
+            "optimize-MARA-model-parameters.R"
+        )
+
+    output:
+        TSV_parameters_A_b = os.path.join(
+            "{MAE_output_dir}",
+            "{region}",
+            "{matrix}",
+            "A_stdA_b_stdb_LL_fraction.tsv"
+        ),
+        TSV_parameters_c = os.path.join(
+            "{MAE_output_dir}",
+            "{region}",
+            "{matrix}",
+            "c.tsv"
+        )
+
+    params:
+        CPP_functions = os.path.join(
+            config["MAE_scripts_dir"],
+            "model.cpp"
+        ),
+        FLOAT_min_motif_fraction = config["MAE_min_motif_fraction"],
+        LOG_cluster_log = os.path.join(
+            "{MAE_output_dir}",
+            "cluster_log",
+            "MAE_fit_model_parameters.{region}.{matrix}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_fit_model_parameters.{region}.{matrix}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_fit_model_parameters.{region}.{matrix}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_fit_model_parameters.{region}.{matrix}.benchmark.log"
+        )
+
+    conda:
+        "env/R.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_r:1.0"
+
+    shell:
+        """
+        Rscript {input.SCRIPT_} \
+        --cpp_model {params.CPP_functions} \
+        --inclusion_table {input.TSV_filtered_inclusion_table} \
+        --sitecount_matrix {input.TSV_sitecount_matrix} \
+        --out1 {output.TSV_parameters_A_b} \
+        --out2 {output.TSV_parameters_c} \
+        --min_motif_fraction {params.FLOAT_min_motif_fraction} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Calculate Z-scores of motif activity
+##############################################################################
+
+rule MAE_calculate_Zscores:
+    """
+    Calculating Z-scores of motifs activities
+    (for each region, for each window, for each motif separately)
+    """
+    input:
+        TSV_parameters_A_b = os.path.join(
+            "{MAE_output_dir}",
+            "{region}",
+            "{matrix}",
+            "A_stdA_b_stdb_LL_fraction.tsv"
+        ),
+        TSV_design_table = config["MAE_design_file"],
+        SCRIPT_ = os.path.join(
+            config["MAE_scripts_dir"],
+            "calculate-Zscores.py"
+        )
+
+    output:
+        TSV_Zscores = os.path.join(
+            "{MAE_output_dir}",
+            "{region}",
+            "{matrix}",
+            "Zscores.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{MAE_output_dir}",
+            "cluster_log",
+            "MAE_calculate_Zscores.{region}.{matrix}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_calculate_Zscores.{region}.{matrix}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_calculate_Zscores.{region}.{matrix}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_calculate_Zscores.{region}.{matrix}.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --activity-table {input.TSV_parameters_A_b} \
+        --design-table {input.TSV_design_table} \
+        --outfile {output.TSV_Zscores} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Extend tables with additional information
+##############################################################################
+
+rule MAE_extend_result_tables:
+    """
+    Splitting the ID field into: motif and region separately
+    """
+    input:
+        TSV_Zscores = os.path.join(
+            "{MAE_output_dir}",
+            "{region}",
+            "{matrix}",
+            "Zscores.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["MAE_scripts_dir"],
+            "extend-tables.py"
+        )
+
+    output:
+        TSV_Zscores_reformat = os.path.join(
+            "{MAE_output_dir}",
+            "{region}",
+            "{matrix}",
+            "Zscores_reformat.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{MAE_output_dir}",
+            "cluster_log",
+            "MAE_extend_result_tables.{region}.{matrix}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_extend_result_tables.{region}.{matrix}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_extend_result_tables.{region}.{matrix}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_extend_result_tables.{region}.{matrix}.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --input-table {input.TSV_Zscores} \
+        --output-table {output.TSV_Zscores_reformat} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Annotate Z-scores with a statistical significancy measure
+##############################################################################
+
+rule MAE_calculate_Zscores_statistical_significancy:
+    """
+    Running a mixture model to infer Gaussian parameters for Zscores
+    and calculating the fg posteriors.
+    """
+    input:
+        TSV_Zscores_reformat = os.path.join(
+            "{MAE_output_dir}",
+            "{region}",
+            "{matrix}",
+            "Zscores_reformat.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["MAE_scripts_dir"],
+            "calculate_Zscores_statistical_significancy.R"
+        )
+
+    output:
+        TSV_Zscores_updated = os.path.join(
+            "{MAE_output_dir}",
+            "{region}",
+            "{matrix}",
+            "Zscores_updated.tsv"
+        )
+
+    params:
+        STR_sorting_strategy = config["MAE_sorting_strategy"],
+        LOG_cluster_log = os.path.join(
+            "{MAE_output_dir}",
+            "cluster_log",
+            "MAE_calculate_Zscores_statistical_significancy.{region}.{matrix}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_calculate_Zscores_statistical_significancy.{region}.{matrix}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_calculate_Zscores_statistical_significancy.{region}.{matrix}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_calculate_Zscores_statistical_significancy.{region}.{matrix}.benchmark.log"
+        )
+
+    conda:
+        "env/R.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_r:1.0"
+
+    shell:
+        """
+        Rscript {input.SCRIPT_} \
+        --input {input.TSV_Zscores_reformat} \
+        --sorting-strategy {params.STR_sorting_strategy} \
+        --output {output.TSV_Zscores_updated} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Collapse results for a given region
+##############################################################################
+
+rule MAE_collapse_results_for_region:
+    """
+    Collapsing tables for distinct windows in a given region
+    """
+    input:
+        LIST_Zscores_updated = lambda wildcards: \
+            [ \
+                os.path.join(
+                    wildcards.MAE_output_dir,
+                    wildcards.region,
+                    matrix,
+                    "Zscores_updated.tsv"
+                ) \
+                for matrix in config["MAE_sitecount_matrices"][wildcards.region].keys() \
+            ],
+        SCRIPT_ = os.path.join(
+            config["MAE_scripts_dir"],
+            "collapse-scores.py"
+        )
+
+    output:
+        TSV_collapsed_results_per_region = os.path.join(
+            "{MAE_output_dir}",
+            "{region}",
+            "collapsed_results.tsv"
+        )
+
+    params:
+        STR_sorting_key = "combined.standard.Zscore" \
+            if config["MAE_sorting_strategy"] == "avg" else "max.abs.standard.Zscore",
+        LOG_cluster_log = os.path.join(
+            "{MAE_output_dir}",
+            "cluster_log",
+            "MAE_collapse_results_for_region.{region}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_collapse_results_for_region.{region}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_collapse_results_for_region.{region}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{MAE_output_dir}",
+            "local_log",
+            "MAE_collapse_results_for_region.{region}.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --tables {input.LIST_Zscores_updated} \
+        --sorting-key {params.STR_sorting_key} \
+        --outfile {output.TSV_collapsed_results_per_region} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """

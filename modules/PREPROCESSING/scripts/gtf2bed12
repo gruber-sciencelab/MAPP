@@ -1,0 +1,82 @@
+"""
+Downloaded from:
+https://github.com/zavolanlab/zgtf/blob/master/scripts/gtf2bed12
+(20.06.2020)
+Modifications: Maciej Bak
+"""
+
+import sys
+import os
+from argparse import ArgumentParser, RawTextHelpFormatter
+from zgtf import gtf_to_transcript_exons, transcript_exons_to_bed12
+
+def main():
+    """Convert gtf file to bed12"""
+
+    __doc__ = "Convert gtf file to bed12"
+
+    parser = ArgumentParser(
+        description=__doc__,
+        formatter_class=RawTextHelpFormatter
+    )
+
+    parser.add_argument(
+        "--gtf",
+        dest="gtf",
+        help="Annotation file (gtf format)",
+        required=True,
+        metavar="FILE"
+    )
+
+    parser.add_argument(
+        "--bed12",
+        dest="bed12",
+        help="Output file (bed12 format)",
+        required=True,
+        metavar="FILE"
+    )
+
+    parser.add_argument(
+        "--transcript_type",
+        dest="transcript_type",
+        help="Transcript type [Default: protein_coding]",
+        required=False,
+        default="protein_coding"
+    )
+
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        dest="verbose",
+        default=False,
+        required=False,
+        help="Verbose"
+    )
+
+    try:
+        options = parser.parse_args()
+    except(Exception):
+        parser.print_help()
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
+    if options.verbose:
+        sys.stdout.write(f"Parsing gtf file: {options.gtf}{os.linesep}")
+    transcripts = gtf_to_transcript_exons(options.gtf, options.transcript_type)
+
+    w = open(options.bed12, "w")
+    for transcript_id in transcripts.keys():
+        exons = transcripts[transcript_id]
+        w.write(transcript_exons_to_bed12(exons, transcript_id) + os.linesep)
+    w.close()
+        
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.stderr.write("User interrupt!" + os.linesep)
+        sys.exit(0)

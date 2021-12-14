@@ -1,0 +1,63 @@
+###############################################################################
+#
+#   Config options for the snakemake pipeline
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 11-11-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# path to the directory with all the scripts for this pipeline
+# (relative to the 'execution' directory)
+CSM_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/CREATE_SITECOUNT_MATRICES/scripts"
+
+# path for the output directory
+# (relative to the 'execution' directory)
+CSM_outdir: "/builds/zavolan_group/pipelines/mapp/modules/CREATE_SITECOUNT_MATRICES/output"
+
+# path to the genomic sequence in fasta format
+CSM_genomic_sequence: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+
+# relative ranges around respective sites
+CSM_regions_ranges:
+  "polyA": "50-50"
+  "3ss": "100-50"
+  "5ss": "50-100"
+
+# paths to the bed-formatted sites
+CSM_regions_files:
+  "polyA": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_CSM/tandem_pas.terminal_exons.clean.bed"
+  "3ss": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_CSM/3ss.bed"
+  "5ss": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_CSM/5ss.bed"
+
+# sliding window configuration: window size and slide step
+CSM_window_size: "50"
+CSM_window_step: "25"
+
+# sitecount matrix type: "kmers" or "pwms" options available
+CSM_matrix_type: "kmers"
+
+# options for "kmers" sitecount matrices:
+# inclusive ends specification for the range of k-mers sizes = [kmer_min,kmer_max]
+CSM_kmer_min: "2"
+CSM_kmer_max: "5"
+
+# options for "pwms" sitecount matrices:
+# path to the directory with TRANSFAC-formatted PWM files
+CSM_pwm_directory: ""
+
+# MotEvo parameter: prior probability for the background binding
+CSM_MotEvo_bg_binding_prior: 0
+
+# MotEvo parameter: prior minimum binding posterior probability
+CSM_MotEvo_min_binding_posterior: 0
+
+# MotEvo parameter: order of the Markov chain
+CSM_MotEvo_Markov_chain_order: 0
+
+...

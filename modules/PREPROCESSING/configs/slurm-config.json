@@ -1,0 +1,137 @@
+{
+
+    "__default__":
+    {
+        "time": "00:01:00",
+        "cpus-per-task": "1",
+        "mem": "1G",
+        "output": "{params.LOG_cluster_log}-%j-%N.log"
+    },
+
+    "PQA_create_genome_index":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "50G"
+    },
+
+    "PQA_prepare_adapters_textfiles":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "PQA_run_FastQC":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_remove_adapters_pe":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_remove_adapters_se":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_remove_polyA_polyT_tails_pe":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_remove_polyA_polyT_tails_se":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_align_reads":
+    {
+        "time": "06:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "100G"
+    },
+
+    "PQA_sort_aligned_reads":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_index_aligned_reads":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_collapse_genomic_annotation":
+    {
+        "time": "00:10:00",
+        "cpus-per-task": "{threads}",
+        "mem": "10G"
+    },
+
+    "PQA_mapping_quality_analysis":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_merge_mapping_quality_tables":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "PQA_extract_transcripts_as_bed12":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "10G"
+    },
+
+    "PQA_calculate_TIN_scores":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_merge_TIN_scores":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "PQA_calculate_median_TIN_score":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "PQA_filter_design_table":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    }
+
+}

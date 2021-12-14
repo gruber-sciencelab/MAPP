@@ -1,0 +1,426 @@
+##############################################################################
+#
+#   Snakemake pipeline:
+#   Generating summary plots and tables for MAPP final report
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 04-06-2020
+#   LICENSE: Apache_2.0
+#
+##############################################################################
+
+# imports
+import sys
+import os
+
+# local rules
+localrules: RES_all, RES_create_outdir
+
+##############################################################################
+### Target rule with final output of the pipeline
+##############################################################################
+
+rule RES_all:
+    """
+    Gathering all output
+    """
+    input:
+        DIR_Zscores_heatmaps = expand(
+            os.path.join(
+                "{RES_output_dir}",
+                "Zscores_heatmaps"
+            ),
+            RES_output_dir = config["RES_outdir"]
+        )
+
+##############################################################################
+### Create directories for the results
+##############################################################################
+
+rule RES_create_outdir:
+    """
+    Preparing directories for the results
+    """
+    output:
+        TEMP_ = temp(
+            os.path.join(
+                "{RES_output_dir}",
+                "RES_outdir"
+            )
+        )
+
+    params:
+        DIR_output_dir = "{RES_output_dir}",
+        LOG_cluster_log = os.path.join(
+            "{RES_output_dir}",
+            "cluster_log"
+        ),
+        LOG_local_log = os.path.join(
+            "{RES_output_dir}",
+            "local_log"
+        )
+
+    threads: 1
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        mkdir -p {params.DIR_output_dir}; \
+        mkdir -p {params.LOG_cluster_log}; \
+        mkdir -p {params.LOG_local_log}; \
+        touch {output.TEMP_}
+        """
+
+##############################################################################
+### Annotate statistical significance for all motifs
+##############################################################################
+
+rule RES_annotate_statistical_significance:
+    """
+    Appending columns with information regarding statistical significance
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{RES_output_dir}",
+            "RES_outdir"
+        ),
+        TSV_splicing_results_table_3ss = \
+            config["RES_splicing_results_table_3ss"],
+        TSV_splicing_results_table_5ss = \
+            config["RES_splicing_results_table_5ss"],
+        TSV_polyadenylation_results_table = \
+            config["RES_polyadenylation_results_table"],
+        SCRIPT_ = os.path.join(
+            config["RES_scripts_dir"],
+            "annotate-motifs-with-statistical-significance.py"
+        )
+
+    output:
+        TSV_updated_table_splicing_3ss = os.path.join(
+            "{RES_output_dir}",
+            "results_updated_3ss.tsv"
+        ),
+        TSV_updated_table_splicing_5ss = os.path.join(
+            "{RES_output_dir}",
+            "results_updated_5ss.tsv"
+        ),
+        TSV_updated_table_polyadenylation = os.path.join(
+            "{RES_output_dir}",
+            "results_updated_pas.tsv"
+        )
+
+    params:
+        STR_sorting_strategy = config["RES_sorting_strategy"],
+        FLOAT_max_pvalue = config["RES_max_pval"],
+        LOG_cluster_log = os.path.join(
+            "{RES_output_dir}",
+            "cluster_log",
+            "RES_annotate_statistical_significance.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_annotate_statistical_significance.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_annotate_statistical_significance.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_annotate_statistical_significance.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --sorting-strategy {params.STR_sorting_strategy} \
+        --max-pvalue {params.FLOAT_max_pvalue} \
+        --infile-splicing-3ss {input.TSV_splicing_results_table_3ss} \
+        --infile-splicing-5ss {input.TSV_splicing_results_table_5ss} \
+        --infile-polyadenylation-pas {input.TSV_polyadenylation_results_table} \
+        --outfile-splicing-3ss {output.TSV_updated_table_splicing_3ss} \
+        --outfile-splicing-5ss {output.TSV_updated_table_splicing_5ss} \
+        --outfile-polyadenylation-pas {output.TSV_updated_table_polyadenylation} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Select motifs acting on every site (3ss,5ss,pas)
+##############################################################################
+
+rule RES_select_motifs:
+    """
+    Selecting top N distinct statistically significant motifs
+    with highest absolute activities Z-scores
+    """
+    input:
+        TSV_updated_table_splicing_3ss = os.path.join(
+            "{RES_output_dir}",
+            "results_updated_3ss.tsv"
+        ),
+        TSV_updated_table_splicing_5ss = os.path.join(
+            "{RES_output_dir}",
+            "results_updated_5ss.tsv"
+        ),
+        TSV_updated_table_polyadenylation = os.path.join(
+            "{RES_output_dir}",
+            "results_updated_pas.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["RES_scripts_dir"],
+            "select-motifs.py"
+        )
+
+    output:
+        TXT_top_motifs_splicing_3ss = os.path.join(
+            "{RES_output_dir}",
+            "motifs_3ss.txt"
+        ),
+        TXT_top_motifs_splicing_5ss = os.path.join(
+            "{RES_output_dir}",
+            "motifs_5ss.txt"
+        ),
+        TXT_top_motifs_polyadenylation = os.path.join(
+            "{RES_output_dir}",
+            "motifs_pas.txt"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{RES_output_dir}",
+            "cluster_log",
+            "RES_select_top_motifs.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_select_top_motifs.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_select_top_motifs.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_select_top_motifs.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --infile-splicing-3ss {input.TSV_updated_table_splicing_3ss} \
+        --infile-splicing-5ss {input.TSV_updated_table_splicing_5ss} \
+        --infile-polyadenylation-pas {input.TSV_updated_table_polyadenylation} \
+        --outfile-splicing-3ss-motifs {output.TXT_top_motifs_splicing_3ss} \
+        --outfile-splicing-5ss-motifs {output.TXT_top_motifs_splicing_5ss} \
+        --outfile-polyadenylation-pas-motifs {output.TXT_top_motifs_polyadenylation} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Prepare per-motif samples' Z-scores tables
+##############################################################################
+
+rule RES_prepare_Zscores_tables:
+    """
+    Preparing TSV tables with per-sample Z-scores in all windows
+    of all regions (for every of the top motifs)
+    """
+    input:
+        TSV_updated_table_splicing_3ss = os.path.join(
+            "{RES_output_dir}",
+            "results_updated_3ss.tsv"
+        ),
+        TSV_updated_table_splicing_5ss = os.path.join(
+            "{RES_output_dir}",
+            "results_updated_5ss.tsv"
+        ),
+        TSV_updated_table_polyadenylation = os.path.join(
+            "{RES_output_dir}",
+            "results_updated_pas.tsv"
+        ),
+        TXT_top_motifs_splicing_3ss = os.path.join(
+            "{RES_output_dir}",
+            "motifs_3ss.txt"
+        ),
+        TXT_top_motifs_splicing_5ss = os.path.join(
+            "{RES_output_dir}",
+            "motifs_5ss.txt"
+        ),
+        TXT_top_motifs_polyadenylation = os.path.join(
+            "{RES_output_dir}",
+            "motifs_pas.txt"
+        ),
+        TSV_design_file = config["RES_design_file"],
+        SCRIPT_ = os.path.join(
+            config["RES_scripts_dir"],
+            "prepare-Zscores-tables.py"
+        )
+
+    output:
+        DIR_Zscores_tables = directory(
+            os.path.join(
+                "{RES_output_dir}",
+                "Zscores_tables"
+            )
+        )
+
+    params:
+        FLOAT_max_pvalue = config["RES_max_pval"],
+        STR_sorting_strategy = config["RES_sorting_strategy"],
+        LOG_cluster_log = os.path.join(
+            "{RES_output_dir}",
+            "cluster_log",
+            "RES_prepare_Zscores_tables.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_prepare_Zscores_tables.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_prepare_Zscores_tables.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_prepare_Zscores_tables.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --samples-design-table {input.TSV_design_file} \
+        --max-pvalue {params.FLOAT_max_pvalue} \
+        --sorting-strategy {params.STR_sorting_strategy} \
+        --infile-splicing-3ss {input.TSV_updated_table_splicing_3ss} \
+        --infile-splicing-5ss {input.TSV_updated_table_splicing_5ss} \
+        --infile-polyadenylation-pas {input.TSV_updated_table_polyadenylation} \
+        --infile-splicing-3ss-motifs {input.TXT_top_motifs_splicing_3ss} \
+        --infile-splicing-5ss-motifs {input.TXT_top_motifs_splicing_5ss} \
+        --infile-polyadenylation-pas-motifs {input.TXT_top_motifs_polyadenylation} \
+        --output-directory {output.DIR_Zscores_tables} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Create heatmaps of per-sample activity Z-scores
+##############################################################################
+
+rule RES_plot_Zscores_heatmaps:
+    """
+    Plotting heatmaps of top motifs:
+    Z-scores of all samples over all windows over all sites
+    """
+    input:
+        DIR_Zscores_tables = os.path.join(
+            "{RES_output_dir}",
+            "Zscores_tables"
+        ),
+        SCRIPT_ = os.path.join(
+            config["RES_scripts_dir"],
+            "plot-Zscores-heatmaps.py"
+        )
+
+    output:
+        DIR_Zscores_heatmaps = directory(
+            os.path.join(
+                "{RES_output_dir}",
+                "Zscores_heatmaps"
+            )
+        )
+
+    params:
+        INT_dpi = "300",
+        LOG_cluster_log = os.path.join(
+            "{RES_output_dir}",
+            "cluster_log",
+            "RES_plot_Zscores_heatmaps.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_plot_Zscores_heatmaps.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_plot_Zscores_heatmaps.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{RES_output_dir}",
+            "local_log",
+            "RES_plot_Zscores_heatmaps.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --tables-main-directory {input.DIR_Zscores_tables} \
+        --output-directory {output.DIR_Zscores_heatmaps} \
+        --dpi {params.INT_dpi} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """

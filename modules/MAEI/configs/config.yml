@@ -1,0 +1,49 @@
+###############################################################################
+#
+#   Config options for the snakemake pipeline
+#
+#   AUTHORS: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 10-04-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# path to the directory with all the scripts for this pipeline
+# (relative to the 'execution' directory)
+MAE_scripts_dir: "../scripts"
+
+# path for the output directory
+# (relative to the 'execution' directory)
+MAE_outdir: "../output"
+
+# path to the quantified per-exon summed-up transcript expression information
+# (as in the output of QEI module)
+MAE_inclusion_table: ""
+
+# TSV-formatted design table with information regarding RNA-Seq samples (quality-filtered set)
+MAE_design_file: ""
+
+# per-region, per-window paths to the sitecount matrices
+MAE_sitecount_matrices:
+  "3ss":
+    "": ""
+  "5ss":
+    "": ""
+
+# minimal fraction of sequences which must contain a binding site / kmer
+# for a given motif in order for that motif to be considered (for a given window)
+MAE_min_motif_fraction: 0.01
+
+# minimal expression of all transcripts supporting an
+# alternatively spliced exon (in all samples)
+MAE_min_expression: 1.0
+
+# sorting startegy for the output table with motif activities;
+# options: "avg" OR "max"
+MAE_sorting_strategy: "avg"
+
+...

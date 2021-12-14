@@ -1,0 +1,36 @@
+###############################################################################
+#
+#   Software to be installed in the environment
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 23-03-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+name: python3
+
+channels:
+  - bioconda
+  - conda-forge
+
+dependencies:
+  - bash=4.4.18
+  - python=3.6.3
+  - numpy=1.15.2
+  - pandas=0.21.0
+  - pyyaml=3.12
+  - scipy=1.0.0
+  - matplotlib=3.1.0
+  - seaborn=0.8.1
+  - statsmodels=0.10.2
+  - pybedtools=0.7.10
+  - htseq=0.12.4
+  - pymongo=3.2.2
+  - jinja2=2.10
+
+...

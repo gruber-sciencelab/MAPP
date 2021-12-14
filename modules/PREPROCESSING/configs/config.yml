@@ -1,0 +1,60 @@
+###############################################################################
+#
+#   Config options for the snakemake pipeline
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 25-04-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# path to the directory with all the scripts for this pipeline
+# (relative to the 'execution' directory)
+PQA_scripts_dir: "../scripts"
+
+# path for the output directory
+# (relative to the 'execution' directory)
+PQA_outdir: "../output"
+
+# path to the text file with known common adapters sequences
+# (relative to the 'execution' directory)
+PQA_adapters_sequences: "../resources/adapters.txt"
+
+# path to the genomic sequence in fasta format
+PQA_genomic_sequence: ""
+
+# path to the genomic annotation in GTF format
+PQA_genomic_annotation: ""
+
+# TSV-formatted design table with information regarding RNA-Seq samples
+PQA_design_file: ""
+
+# path to (for) the STAR-generated genome index
+# if the index does not exists yet, or if its modification date is older than
+# the genomic resources - it will be generated in that directory
+# NOTE: do not put it under the PQA_outdir!
+PQA_index: "../index"
+
+# STAR option during the mapping process: --sjdbOverhang
+# optimally, it should be set to read length - 1
+PQA_sjdbOverhang: 99
+
+# biotype of transcripts included in the TIN score calculation 
+PQA_transcript_biotypes: "protein_coding"
+
+# quality filtering cutoffs:
+PQA_min_median_TIN_score: 50.0
+PQA_RNASeQC_min_mapping_rate: 0.95
+PQA_RNASeQC_min_unique_rate_of_mapped: 0.95
+PQA_RNASeQC_min_high_quality_rate: 0.85
+PQA_RNASeQC_max_intergenic_rate: 0.1
+PQA_RNASeQC_max_rRNA_rate: 0.01
+
+# boolean flag: whether to unzip trimmed reads before STAR mapping or not
+PQA_storage_efficient: False
+
+...

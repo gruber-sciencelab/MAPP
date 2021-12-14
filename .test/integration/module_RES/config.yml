@@ -1,0 +1,42 @@
+###############################################################################
+#
+#   Config options for the snakemake pipeline
+#
+#   AUTHORS: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 11-11-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# path to the directory with all the scripts for this pipeline
+# (relative to the 'execution' directory)
+RES_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/REPORT_RESULTS/scripts"
+
+# path for the output directory
+# (relative to the 'execution' directory)
+RES_outdir: "/builds/zavolan_group/pipelines/mapp/modules/REPORT_RESULTS/output"
+
+# path to the splicing model results table (3ss)
+RES_splicing_results_table_3ss: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_RES/splicing_3ss_results.tsv"
+
+# path to the splicing model results table (5ss)
+RES_splicing_results_table_5ss: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_RES/splicing_5ss_results.tsv"
+
+# path to the polyadenylation model results table
+RES_polyadenylation_results_table: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_RES/polyadenylation_results.tsv"
+
+# TSV-formatted design table with information regarding RNA-Seq samples (quality-filtered set)
+RES_design_file: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_RES/design_table.tsv"
+
+# sorting startegy for the output table with motif activities;
+# options: "avg" OR "max"
+RES_sorting_strategy: "avg"
+
+# cutoff on the Bonferroni-corrected p-values to select stat. sign. motifs
+RES_max_pval: 0.05
+
+...

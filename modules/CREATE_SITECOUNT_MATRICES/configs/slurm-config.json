@@ -1,0 +1,60 @@
+{
+
+    "__default__":
+    {
+        "time": "00:01:00",
+        "cpus-per-task": "1",
+        "mem": "1G",
+        "output": "{params.LOG_cluster_log}-%j-%N.log"
+    },
+
+    "CSM_extract_window_coord_and_sequence":
+    {
+        "time": "00:30:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "CSM_create_kmer_sitecount_matrices":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "CSM_prepare_MotEvo_parameters":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "CSM_prepare_sequences_for_MotEvo":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "CSM_MotEvo_analysis":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "CSM_create_MotEvo_sitecount_matrices":
+    {
+        "time": "00:30:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "CSM_create_links_to_matrices":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    }
+
+}

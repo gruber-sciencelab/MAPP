@@ -1,0 +1,54 @@
+###############################################################################
+#
+#   Config options for the snakemake pipeline
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 24-03-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# path to the directory with all the scripts for this pipeline
+# (relative to the 'execution' directory)
+TPA_scripts_dir: "../scripts"
+
+# path for the output directory
+# (relative to the 'execution' directory)
+TPA_outdir: "../output"
+
+# BED-formatted atlas of poly(A) sites
+# ATTENTION:
+# Score entry (column 5) is expected to contain a number of protocols
+# with which a poly(A) site was identified.
+TPA_pas_atlas: ""
+
+# path to the genomic annotation in GTF format
+TPA_genomic_annotation: ""
+
+# flag to turn on specificity for a given library type:
+# stranded or unstranded
+TPA_library_type: stranded
+
+# minimum number of protocols a site must get support from
+TPA_min_protocols: 1
+
+# filtering fields in the annotation file
+TPA_biotype_key: transcript_biotype
+TPA_biotype_values:
+    - protein_coding
+
+# number of nucleotides by which each terminal exon is extended at the 3' end
+TPA_three_prime_end_offset: 0
+
+# number of nucleotides by which transcripts' loci are extended in both directorions
+TPA_transcript_locus_offset: 100
+
+# region downstream of terminal exon 3' ends that should not overlap with any
+# other annotated feature
+TPA_downstream_extend: 200
+
+...
