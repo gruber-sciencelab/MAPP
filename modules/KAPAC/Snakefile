@@ -1,0 +1,593 @@
+##############################################################################
+#
+#   Snakemake pipeline:
+#   KAPAC
+#
+#   AUTHOR: Maciej_Bak, Andreas_Gruber
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 13-04-2020
+#   LICENSE: Apache_2.0
+#
+##############################################################################
+
+# imports
+import sys
+import os
+
+# local rules
+localrules: KPC_all, KPC_create_outdir
+
+##############################################################################
+### Target rule with final output of the pipeline
+##############################################################################
+
+rule KPC_all:
+    """
+    Gathering all output
+    """
+    input:
+        TSV_collapsed_results = expand(
+            os.path.join(
+                "{KPC_output_dir}",
+                "model_results",
+                "collapsed_results.tsv"
+            ),
+            KPC_output_dir = config["KPC_outdir"]
+        )
+
+##############################################################################
+### Create directories for the results
+##############################################################################
+
+rule KPC_create_outdir:
+    """
+    Preparing directories for the results
+    """
+    output:
+        TEMP_ = temp(
+            os.path.join(
+                "{KPC_output_dir}",
+                "KPC_outdir"
+            )
+        )
+
+    params:
+        DIR_output_dir = "{KPC_output_dir}",
+        LOG_cluster_log = os.path.join(
+            "{KPC_output_dir}",
+            "cluster_log"
+        ),
+        LOG_local_log = os.path.join(
+            "{KPC_output_dir}",
+            "local_log"
+        )
+
+    threads: 1
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        mkdir -p {params.DIR_output_dir}; \
+        mkdir -p {params.LOG_cluster_log}; \
+        mkdir -p {params.LOG_local_log}; \
+        touch {output.TEMP_}
+        """
+
+##############################################################################
+### Create polyAsite to exons mappings
+##############################################################################
+
+rule KPC_create_polyA_site_to_exon_mapping:
+    """
+    Subselecting columns to create a mapping between pas IDs and exons
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{KPC_output_dir}",
+            "KPC_outdir"
+        ),
+        TSV_tandem_pas = config["KPC_tandem_polyA_sites"]
+
+    output:
+        TSV_polyA_site_to_exon = os.path.join(
+            "{KPC_output_dir}",
+            "polyAsite2exon.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{KPC_output_dir}",
+            "cluster_log",
+            "KPC_create_polyA_site_to_exon_mapping.log"
+        )
+
+    threads: 1
+
+    log:
+        # stdout is used by the cut command in this rule
+        LOG_local_stderr = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_create_polyA_site_to_exon_mapping.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_create_polyA_site_to_exon_mapping.benchmark.log"
+        )
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        cut -f 4,9 {input.TSV_tandem_pas} \
+        1> {output.TSV_polyA_site_to_exon} \
+        2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Tag overlapping poly(A) sites 
+##############################################################################
+
+rule KPC_tag_overlapping_polyA_sites:
+    """
+    Tagging poly(A) sites as overlapping/not overlapping
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{KPC_output_dir}",
+            "KPC_outdir"
+        ),
+        TSV_tandem_pas = config["KPC_tandem_polyA_sites"],
+        SCRIPT_ = os.path.join(
+            config["KPC_scripts_dir"],
+            "tag-tandem-PAS.pl"
+        )
+
+    output:
+        TSV_tagged_polyA_sites = os.path.join(
+            "{KPC_output_dir}",
+            "TSV_tagged_polyAsites.tsv"
+        )
+
+    params:
+        INT_upstream_window = config["KPC_upstream_window"],
+        INT_downstream_window = config["KPC_downstream_window"],
+        LOG_cluster_log = os.path.join(
+            "{KPC_output_dir}",
+            "cluster_log",
+            "KPC_tag_overlapping_polyA_sites.log"
+        )
+
+    threads: 1
+
+    log:
+        # stdout is used by the Perl script in this rule
+        LOG_local_stderr = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_tag_overlapping_polyA_sites.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_tag_overlapping_polyA_sites.benchmark.log"
+        )
+
+    conda:
+        "env/Perl.yml"
+
+    singularity:
+        "docker://perl:5.26.2"
+
+    shell:
+        """
+        perl {input.SCRIPT_} \
+        --upstream={params.INT_upstream_window} \
+        --downstream={params.INT_downstream_window} \
+        {input.TSV_tandem_pas} \
+        1> {output.TSV_tagged_polyA_sites} \
+        2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Prepare poly(A) sites expression table
+##############################################################################
+
+rule KPC_select_pas_expression_columns:
+    """
+    Selecting poly(A) sites expression columns for KAPAC model
+    """
+    input:
+        TSV_tagged_polyA_sites = os.path.join(
+            "{KPC_output_dir}",
+            "TSV_tagged_polyAsites.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["KPC_scripts_dir"],
+            "filter-pas-table.py"
+        )
+
+    output:
+        TSV_pas_expression = os.path.join(
+            "{KPC_output_dir}",
+            "polyAsites_expression.tsv"
+        ),
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{KPC_output_dir}",
+            "cluster_log",
+            "KPC_select_pas_expression_columns.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_select_pas_expression_columns.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_select_pas_expression_columns.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_select_pas_expression_columns.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --pas-table {input.TSV_tagged_polyA_sites} \
+        --expression-table {output.TSV_pas_expression} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### run MARA model of KAPAC
+##############################################################################
+
+rule KPC_run_KAPAC_model:
+    """
+    Calling the script which fits motifs activities and calculates Z-scores
+    """
+    input:
+        TSV_pas_expression = os.path.join(
+            "{KPC_output_dir}",
+            "polyAsites_expression.tsv"
+        ),
+        TSV_polyA_site_to_exon = os.path.join(
+            "{KPC_output_dir}",
+            "polyAsite2exon.tsv"
+        ),
+        TSV_sitecount_matrix = lambda wildcards: \
+            config["KPC_sitecount_matrices"][wildcards.matrix],
+        TSV_design_file = config["KPC_design_file"],
+        SCRIPT_ = os.path.join(
+            config["KPC_scripts_dir"],
+            "KAPACv2.R"
+        )
+
+    output:
+        TSV_KAPAC_results = os.path.join(
+            "{KPC_output_dir}",
+            "model_results",
+            "{matrix}",
+            "KAPAC_results.tsv"
+        )
+
+    params:
+        DIR_KAPAC_results = os.path.join(
+            "{KPC_output_dir}",
+            "model_results",
+            "{matrix}"
+        ),
+        KPC_row_center_expression = \
+            config["KPC_row_center_expression"],
+        KPC_consider_only_excess_counts = \
+            config["KPC_consider_only_excess_counts"],
+        KPC_min_motif_fraction = \
+            config["KPC_min_motif_fraction"],
+        KPC_nr_random_runs = \
+            config["KPC_nr_random_runs"],
+        KPC_considered_region_length = \
+            config["KPC_window_size"],
+        KPC_expression_pseudocount = "1.0",
+        LOG_cluster_log = os.path.join(
+            "{KPC_output_dir}",
+            "cluster_log",
+            "KPC_run_KAPAC_model.{matrix}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_run_KAPAC_model.{matrix}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_run_KAPAC_model.{matrix}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_run_KAPAC_model.{matrix}.benchmark.log"
+        )
+
+    conda:
+        "env/R.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_r:1.0"
+
+    shell:
+        """
+        Rscript --vanilla {input.SCRIPT_} \
+        --verbose TRUE \
+        --sample_design {input.TSV_design_file} \
+        --expression_matrix {input.TSV_pas_expression} \
+        --sitecount_matrix {input.TSV_sitecount_matrix} \
+        --pas_exon_associations {input.TSV_polyA_site_to_exon} \
+        --row_center_expression {params.KPC_row_center_expression} \
+        --expression_pseudocount {params.KPC_expression_pseudocount} \
+        --consider_excess_counts_only {params.KPC_consider_only_excess_counts} \
+        --considered_region_length {params.KPC_considered_region_length} \
+        --min_kmer_abundance_fraction {params.KPC_min_motif_fraction} \
+        --report_NAs_for_kmers_below_min_kmer_abundance_fraction TRUE \
+        --number_of_randomized_runs {params.KPC_nr_random_runs} \
+        --results_dir {params.DIR_KAPAC_results} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Extend tables with additional information
+##############################################################################
+
+rule KPC_extend_result_tables:
+    """
+    Splitting the ID field into: motif and region separately
+    """
+    input:
+        TSV_KAPAC_results = os.path.join(
+            "{KPC_output_dir}",
+            "model_results",
+            "{matrix}",
+            "KAPAC_results.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["KPC_scripts_dir"],
+            "extend-tables.py"
+        )
+
+    output:
+        TSV_KAPAC_results_reformat = os.path.join(
+            "{KPC_output_dir}",
+            "model_results",
+            "{matrix}",
+            "KAPAC_results_reformat.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{KPC_output_dir}",
+            "cluster_log",
+            "KPC_extend_result_tables.{matrix}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_extend_result_tables.{matrix}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_extend_result_tables.{matrix}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_extend_result_tables.{matrix}.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --input-table {input.TSV_KAPAC_results} \
+        --output-table {output.TSV_KAPAC_results_reformat} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Annotate Z-scores with a statistical significancy measure
+##############################################################################
+
+rule KPC_calculate_Zscores_statistical_significancy:
+    """
+    Running a mixture model to infer Gaussian parameters for Zscores
+    and calculating the fg posteriors.
+    """
+    input:
+        TSV_KAPAC_results_reformat = os.path.join(
+            "{KPC_output_dir}",
+            "model_results",
+            "{matrix}",
+            "KAPAC_results_reformat.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["KPC_scripts_dir"],
+            "calculate_Zscores_statistical_significancy.R"
+        )
+
+    output:
+        TSV_KAPAC_results_updated = os.path.join(
+            "{KPC_output_dir}",
+            "model_results",
+            "{matrix}",
+            "KAPAC_results_updated.tsv"
+        )
+
+    params:
+        STR_sorting_strategy = config["KPC_sorting_strategy"],
+        LOG_cluster_log = os.path.join(
+            "{KPC_output_dir}",
+            "cluster_log",
+            "KPC_calculate_Zscores_statistical_significancy.{matrix}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_calculate_Zscores_statistical_significancy.{matrix}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_calculate_Zscores_statistical_significancy.{matrix}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_calculate_Zscores_statistical_significancy.{matrix}.benchmark.log"
+        )
+
+    conda:
+        "env/R.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_r:1.0"
+
+    shell:
+        """
+        Rscript {input.SCRIPT_} \
+        --input {input.TSV_KAPAC_results_reformat} \
+        --sorting-strategy {params.STR_sorting_strategy} \
+        --output {output.TSV_KAPAC_results_updated} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Collapse results over all matrices
+##############################################################################
+
+rule KPC_collapse_results:
+    """
+    Collapsing result tables of distinct windows
+    """
+    input:
+        LIST_KAPAC_results_updated = expand(
+            os.path.join(
+                "{KPC_output_dir}",
+                "model_results",
+                "{matrix}",
+                "KAPAC_results_updated.tsv"
+            ),
+            KPC_output_dir = config["KPC_outdir"],
+            matrix = config["KPC_sitecount_matrices"]
+        ),
+        SCRIPT_ = os.path.join(
+            config["KPC_scripts_dir"],
+            "collapse-scores.py"
+        )
+
+    output:
+        TSV_collapsed_results = os.path.join(
+            "{KPC_output_dir}",
+            "model_results",
+            "collapsed_results.tsv"
+        )
+
+    params:
+        STR_sorting_key = "combined.standard.Zscore" \
+            if config["KPC_sorting_strategy"] == "avg" else "max.abs.standard.Zscore",
+        LOG_cluster_log = os.path.join(
+            "{KPC_output_dir}",
+            "cluster_log",
+            "KPC_collapse_results.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_collapse_results.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_collapse_results.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{KPC_output_dir}",
+            "local_log",
+            "KPC_collapse_results.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --tables {input.LIST_KAPAC_results_updated} \
+        --sorting-key {params.STR_sorting_key} \
+        --outfile {output.TSV_collapsed_results} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """

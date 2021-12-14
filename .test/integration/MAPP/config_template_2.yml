@@ -1,0 +1,253 @@
+###############################################################################
+#
+#   User configuration file for MAPP execution
+#
+#   This is a template file for a config for MAPP integration test.
+#   Depending on some of the flags snakemake's execution DAG will be modified.
+#   The following configuration sets:
+#   * quality filtering OFF
+#   * sitecount matrices with kmer counts
+#   * use precomputed output of ASE, TPA and CSM modules
+#   * use precomputed STAR index
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 20-03-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# Custom name for the analysis run
+analysis_name: "GitLab CI test run 2"
+
+################################################################################
+### Paths
+################################################################################
+
+# Pipeline directory
+MAPP_directory: "/builds/zavolan_group/pipelines/mapp"
+
+# Path to the genomic annotation in GTF format
+genomic_annotation: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
+
+# Path to the genomic sequence in FASTA format
+# NOTE:
+# unfortunately there is no separate gffread flag for a genomic sequence index;
+# genome FASTA file should be accompanied by FASTA INDEX (.fai) file
+# in the same directory, under the same core name; in case it is not:
+# gffread will create the index on-the-fly and save it alongside the genomic sequence
+# (thus, the user requires write permission to the directory below in such scenario)
+genomic_sequence: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+
+# Path to the genomic index generated with STAR
+# (if no index is present a new one will be created at the following path)
+genomic_index: "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/Homo_sapiens.GRCh38.index"
+
+# Path to the design table with information about RNA-Seq samples
+analysis_design_table: "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/design_table.tsv"
+
+# Path to the directory with Position Weight Matrices
+# (required only for runs in "pwms" mode, otherwise - please provide "")
+PWM_directory: ""
+
+# Path to the directory with PWMs sequence logos
+# (required only for runs in "pwms" mode, otherwise - please provide "")
+seqlogo_directory: ""
+
+# Path to the list of PAS coordinates in BED format
+PAS_atlas: "/builds/zavolan_group/pipelines/mapp/ATLAS2_hsa/clean-atlas.bed"
+
+# Optional: path to the output directories of CSM module:
+# directories with per-window sitecount matrices (3ss/5ss/pas)
+# To run full analysis with CSM module please provide ""
+# Please be consistent: either all three flags are set or all of them are unset
+# NOTE:
+# in order to avoid unnecessary computations (i.e. use this option)
+# it is essential to comment-out line 52 in the Snakefile
+# ('include: "modules/CREATE_SITECOUNT_MATRICES/Snakefile"')
+# NOTE:
+# For completeness of information in the MAPP summary
+# if paths to directories with pre-computed sitecount matrices
+# are specified below it is also essential to provide paths under the following fields:
+# * tandem_pas_coordinates
+# * 3ss_coordinates
+# * 5ss_coordinates
+# * skipped_exon_events
+sitecount_matrices_directories:
+  "3ss": "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/3ss"
+  "5ss": "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/5ss"
+  "pas": "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/pas"
+
+# Optional: paths to the output files of TPA module (to avoid unnecessary computations)
+# To run full analysis with TPA module please provide ""
+# NOTE:
+# in order to avoid unnecessary computations (i.e. use this options)
+# it is essential to comment-out line 53 in the Snakefile
+# ('include: "modules/PREPARE_TANDEM_PAS/Snakefile"')
+#
+# tandem_pas.terminal_exons.clean.bed
+tandem_pas_coordinates: "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/tandem_pas.terminal_exons.clean.bed"
+# tandem_pas.terminal_exons.representative_sites.bed
+tandem_pas_representative_sites_coordinates: "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/tandem_pas.terminal_exons.representative_sites.bed"
+
+# Optional: paths to the output files of ASE module (to avoid unnecessary computations)
+# To run full analysis with ASE module please provide ""
+# NOTE:
+# in order to avoid unnecessary computations (i.e. use these options)
+# it is essential to comment-out line 56 in the Snakefile
+# ('include: "modules/EXTRACT_AS_EXONS/Snakefile"')
+#
+# 3ss.bed
+3ss_coordinates: "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/3ss.bed"
+# 5ss.bed
+5ss_coordinates: "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/5ss.bed"
+# events_SE_selected.tsv
+skipped_exon_events: "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/events_SE_selected.tsv"
+
+################################################################################
+### Run parameters
+################################################################################
+
+# Biotype of genes & transcripts included in the analysis
+transcript_biotypes: "protein_coding"
+
+# STAR option during the mapping process: --sjdbOverhang
+# optimally, it should be set to read length - 1
+sjdbOverhang: 99
+
+# Boolean flag whether quality analysis and samples filtering should be executed
+quality_check: False
+
+# Minimal per-sample median TIN score (quality control) 
+min_median_TIN_score: 0
+
+# RNASeQC quality control cutoffs
+RNASeQC_min_mapping_rate: 0
+RNASeQC_min_unique_rate_of_mapped: 0
+RNASeQC_min_high_quality_rate: 0
+RNASeQC_max_intergenic_rate: 0
+RNASeQC_max_rRNA_rate: 0
+
+# Whether to unzip trimmed reads before STAR mapping or not
+# (necessary for some cluster systems)
+storage_efficient: False
+
+# Parameters defining ranges around 3ss, 5ss, PAS
+3ss_region_up: 50
+3ss_region_down: 50
+5ss_region_up: 50
+5ss_region_down: 50
+pas_region_up: 50
+pas_region_down: 50
+
+# Lenght of the sliding window
+window_size: 50
+
+# Sitecount matrices type: "kmers" or "pwms"
+matrix_type: "kmers"
+
+# Inclusive ends specification for the range of k-mers sizes = [kmer_min,kmer_max]
+# (required only for runs in "kmers" mode, otherwise - please provide zeros)
+k_min: 2
+k_max: 5
+
+# MotEvo parameter: prior probability for the background binding
+MotEvo_bg_binding_prior: 0
+
+# MotEvo parameter: prior minimum binding posterior probability
+MotEvo_min_binding_posterior: 0
+
+# MotEvo parameter: order of the Markov chain
+MotEvo_Markov_chain_order: 0
+
+# Maximal distance between exons belonging to one cluster
+exon_clustering_max_coverage_distance: 0.05
+
+# RNA-Seq library type
+# IMPORTANT:
+# PAQR does not support single-end data in reverse orientation.
+library_type: "stranded"
+
+# The set of tandem polyA sites is extracted from the polyA site atlas.
+# This parameters sets the minimal number of 3'end sequencing protocols
+# that have to support a polyA site to consider it valid.
+polyA_sites_min_no_protocol: 1
+
+# Length of the extension after 3' of the terminal exon in which
+# one would look for polyA sites
+three_prime_end_offset: 0
+
+# Number of nucleotides by which transcripts' loci are extended
+# in both directorions in search for polyA sites
+transcript_locus_offset: 100
+
+# Downstream extension for mapping exons with tandem polyA sites to genes.
+# Only genes that are mapped unambigously are retained.
+tandem_polyA_exon_extension: 200
+
+# expected RNA-Seq read length
+# approx. to check distances and coverage in the exon (upstream pas)
+readLength: 100
+
+# PAQR parameter: number of nucleotides for which the coverage profile is
+# extended and obtained downstream of each annotated exon end
+coverage_extension: 200
+
+# PAQR parameter: minimum distance between the exon start
+# and the most proximal PAS
+# (for exons with distances below the cutoff the upstream extension
+# of the coverage is calculated)
+cvg_start2prox_minDist: 250
+
+# PAQR parameter: minimum length of the region that needs to be available
+# to calculate a mean coverage and the mean squared error
+relUse_minLength_meanCvg: 100
+
+# PAQR parameter: minimum mean coverage required
+# for an exon to be considered in the analysis
+relUse_minMeanCvg_perSample: 5
+
+# PAQR parameter: length of the region downstream of the exon,
+# necessary to search for zero coverage downstream of the distal site
+relUse_distal_ds: 200
+
+# PAQR parameter: maximum percentage of the coverage at the exon start
+# which is allowed for the mean coverage in the downstream region
+# of a valid distal site
+relUse_distal_ds_maxCvg: 10
+
+# PAQR parameter: distance until which PAS clusters are merged
+relUse_min_cluster_distance: 200
+
+# PAQR parameter: upstream extension added to the PAS cluster's end
+# during the check for global break points 
+relUse_us_reg_for_best_breakPoint: 200
+
+# PAQR parameter: upper limit on the ratio of coverage mean squared error values
+# after and before including a new break point 
+relUse_mse_ratio_threshold: 0.5
+
+# Minimal expression of all transcripts supporting an
+# alternatively spliced exon (in all samples)
+min_transcript_expression: 1
+
+# Minimal fraction of sequences which must contain a binding site / kmer
+# for a given motif in order for that motif to be considered (for a given window)
+min_motif_fraction: 0
+
+# Sorting strategy for the output tables with motif activities;
+# options: "avg" OR "max"
+sorting_strategy: "avg"
+
+# Length of the regions up/downstream PAS used to mark them
+# as overlapping/non-overlapping
+unique_region_upstream_pas: 100
+unique_region_downstream_pas: 100
+
+# Cutoff on the Bonferroni-corrected p-values to select stat. sign. motifs
+max_pval: 0.05
+
+...

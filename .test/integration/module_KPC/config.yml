@@ -1,0 +1,63 @@
+###############################################################################
+#
+#   Config options for the snakemake pipeline
+#
+#   AUTHORS: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 11-11-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# path to the directory with all the scripts for this pipeline
+# (relative to the 'execution' directory)
+KPC_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/KAPAC/scripts"
+
+# path for the output directory
+# (relative to the 'execution' directory)
+KPC_outdir: "/builds/zavolan_group/pipelines/mapp/modules/KAPAC/output"
+
+# path to the table of tandem poly(A) sites, their per-sample tpm-normalized
+# expression and usages (as in the output of PAQ module)
+KPC_tandem_polyA_sites: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_KPC/filtered_pas_expression.tsv"
+
+# TSV-formatted design table with information regarding RNA-Seq samples (quality-filtered set)
+KPC_design_file: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_KPC/design_table.tsv"
+
+# per-window paths to the sitecount matrices
+KPC_sitecount_matrices:
+  "u50to0.d0to0": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_KPC/u50to0.d0to0/matrix.tsv"
+  "u0to0.d0to50": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_KPC/u0to0.d0to50/matrix.tsv"
+
+# size of the analyzed region in sitecount matrices
+KPC_window_size: 50
+
+# minimal fraction of sequences which must contain a binding site / kmer
+# for a given motif in order for that motif to be considered (for a given window)
+KPC_min_motif_fraction: 0.5
+
+# switch for the per-sample centering of polyA sites expression
+KPC_row_center_expression: True
+
+# switch for the background correction of kmer counts
+# (only applicable to k-mer-based sitecount matrices)
+KPC_consider_only_excess_counts: False
+
+# number of randomisations in the procedure to detect
+# statistically significantly acting motifs
+# (has to be above 30)
+KPC_nr_random_runs: "0"
+
+# regions up/downstream polyA sites used to mark them
+# as overlapping/non-overlapping
+KPC_upstream_window: "100"
+KPC_downstream_window: "100"
+
+# sorting startegy for the output table with motif activities;
+# options: "avg" OR "max"
+KPC_sorting_strategy: "max"
+
+...

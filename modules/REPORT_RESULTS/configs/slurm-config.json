@@ -1,0 +1,39 @@
+{
+
+    "__default__":
+    {
+        "time": "00:01:00",
+        "cpus-per-task": "1",
+        "mem": "1G",
+        "output": "{params.LOG_cluster_log}-%j-%N.log"
+    },
+
+    "RES_annotate_statistical_significance":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "RES_select_motifs":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "RES_prepare_Zscores_tables":
+    {
+        "time": "00:30:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "RES_plot_Zscores_heatmaps":
+    {
+        "time": "04:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    }
+
+}

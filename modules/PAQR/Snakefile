@@ -1,0 +1,452 @@
+##############################################################################
+#
+#   Snakemake pipeline: PAQR
+#   based on: https://github.com/zavolanlab/PAQR_KAPAC
+#
+#   AUTHOR: Maciej_Bak, Ralf_Schmidt
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 05-04-2020
+#   LICENSE: Apache_2.0
+#
+##############################################################################
+
+# imports
+import sys
+import os
+import traceback
+import pandas as pd
+
+# local rules
+localrules: PAQ_all, PAQ_create_outdir
+
+def PAQ_parse_config_samples_info():
+    """
+    Return a dict with ordered! lists regarding samples information
+    (from the configfile)
+    """
+    ID_list = sorted(config["PAQ_mapped_samples"].keys())
+    condition_list = [config["PAQ_mapped_samples_conditions"][i] for i in ID_list]
+    samples_dict = {"IDs": ID_list, "conditions": condition_list}
+    return samples_dict
+
+##############################################################################
+### Target rule with final output of the pipeline
+##############################################################################
+
+rule PAQ_all:
+    """
+    Gathering all output
+    """
+    input:
+        TSV_filtered_expression_original = expand(
+            os.path.join(
+                "{PAQ_output_dir}",
+                "tandem_pas_expression_normalized_original.tsv"
+            ),
+            PAQ_output_dir = config["PAQ_outdir"]
+        ),
+        TSV_filtered_pas_positions_pseudocount = expand(
+            os.path.join(
+                "{PAQ_output_dir}",
+                "tandem_pas_expression_normalized_pseudocount.tsv"
+            ),
+            PAQ_output_dir = config["PAQ_outdir"]
+        )
+
+##############################################################################
+### Create directories for the results
+##############################################################################
+
+rule PAQ_create_outdir:
+    """
+    Preparing directories for the results
+    """
+    output:
+        TEMP_ = temp(
+            os.path.join(
+                "{PAQ_output_dir}",
+                "PAQ_outdir"
+            )
+        )
+
+    params:
+        DIR_output_dir = "{PAQ_output_dir}",
+        LOG_cluster_log = os.path.join(
+            "{PAQ_output_dir}",
+            "cluster_log"
+        ),
+        LOG_local_log = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log"
+        )
+
+    threads: 1
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        mkdir -p {params.DIR_output_dir}; \
+        mkdir -p {params.LOG_cluster_log}; \
+        mkdir -p {params.LOG_local_log}; \
+        touch {output.TEMP_}
+        """
+
+##############################################################################
+### Create Poly-A site coverages
+##############################################################################
+
+rule PAQ_create_coverages:
+    """
+    Extracting the coverages of poly(A) sites from the alignment
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{PAQ_output_dir}",
+            "PAQ_outdir"
+        ),
+        BAM_alignment = lambda wildcards:
+            config["PAQ_mapped_samples"][wildcards.sample_ID],
+        BAI_alignment_index = lambda wildcards:
+            config["PAQ_mapped_samples_indices"][wildcards.sample_ID],
+        BED_pas = config['PAQ_tandem_pas'],
+        SCRIPT_ = os.path.join(
+            config["PAQ_scripts_dir"],
+            "create-pas-coverages.py"
+        )
+
+    output:
+        PKL_pas_coverage = os.path.join(
+            "{PAQ_output_dir}",
+            "pas_coverages",
+            "{sample_ID}.pkl"
+        ),
+        TSV_extensions = os.path.join(
+            "{PAQ_output_dir}",
+            "pas_coverages",
+            "{sample_ID}.extensions.tsv"
+        )
+
+    params:
+        INT_coverage_downstream_extension = config['PAQ_coverage_downstream_extension'],
+        INT_min_distance_start_to_proximal = config['PAQ_min_distance_start_to_proximal'],
+        STR_unstranded_flag = lambda wildcards:
+            "--unstranded" if config['PAQ_coverage_unstranded'] == "yes" else "",
+        LOG_cluster_log = os.path.join(
+            "{PAQ_output_dir}",
+            "cluster_log",
+            "PAQ_create_coverages.{sample_ID}.log"
+        )
+    
+    threads: 8
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_create_coverages.{sample_ID}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_create_coverages.{sample_ID}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_create_coverages.{sample_ID}.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --bam {input.BAM_alignment} \
+        --cluster {input.BED_pas} \
+        --ds_extension {params.INT_coverage_downstream_extension} \
+        --min_dist_exStart2prox {params.INT_min_distance_start_to_proximal} \
+        --processors {threads} \
+        --pickle_out {output.PKL_pas_coverage} \
+        {params.STR_unstranded_flag} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Infer relative usage of poly(A) sites
+##############################################################################
+
+rule PAQ_infer_relative_usage:
+    """
+    Infer used poly(A) sites based on the coverage profiles
+    and determine relative usage of those.
+    """
+    input:
+        BED_pas = config['PAQ_tandem_pas'],
+        PKL_pas_coverage = expand(
+            os.path.join(
+                "{PAQ_output_dir}",
+                "pas_coverages",
+                "{sample_ID}.pkl"
+            ),
+            PAQ_output_dir = config["PAQ_outdir"],
+            sample_ID = PAQ_parse_config_samples_info()["IDs"]
+        ),
+        TSV_extensions = expand(
+            os.path.join(
+                "{PAQ_output_dir}",
+                "pas_coverages",
+                "{sample_ID}.extensions.tsv"
+            ),
+            PAQ_output_dir = config["PAQ_outdir"],
+            sample_ID = PAQ_parse_config_samples_info()["IDs"]
+        ),
+        TSV_design_file = config["PAQ_design_file"],
+        SCRIPT_ = os.path.join(
+            config["PAQ_scripts_dir"],
+            "infer-pas-expression.py"
+        )
+
+    output:
+        TSV_pas_relative_usages = os.path.join(
+            "{PAQ_output_dir}",
+            "tandem_pas_relative_usage.tsv"
+        ),
+        TSV_pas_epxression_values = os.path.join(
+            "{PAQ_output_dir}",
+            "tandem_pas_expression.tsv"
+        ),
+        TSV_distal_sites = os.path.join(
+            "{PAQ_output_dir}",
+            "singular_pas_expression.tsv"
+        )
+
+    params:
+        LIST_sample_conditions = PAQ_parse_config_samples_info()["conditions"],
+        LIST_sample_names = PAQ_parse_config_samples_info()["IDs"],
+        INT_read_length = config['PAQ_read_length'],
+        INT_min_length_mean_coverage = config['PAQ_min_length_mean_coverage'],
+        FLOAT_min_mean_exon_coverage = config['PAQ_min_mean_exon_coverage'],
+        INT_distal_downstream_extension = config['PAQ_distal_downstream_extension'],
+        FLOAT_max_mean_coverage = config['PAQ_max_mean_coverage'],
+        FLOAT_cluster_distance = config['PAQ_cluster_distance'],
+        INT_upstream_cluster_extension = config['PAQ_upstream_cluster_extension'],
+        FLOAT_coverage_mse_ratio_limit = config['PAQ_coverage_mse_ratio_limit'],
+        LOG_cluster_log = os.path.join(
+            "{PAQ_output_dir}",
+            "cluster_log",
+            "PAQ_infer_relative_usage.log"
+        )
+    
+    threads: 8
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_infer_relative_usage.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_infer_relative_usage.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_infer_relative_usage.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --design_file {input.TSV_design_file} \
+        --expressions_out {output.TSV_pas_epxression_values} \
+        --clusters {input.BED_pas} \
+        --coverages {input.PKL_pas_coverage} \
+        --conditions {params.LIST_sample_conditions} \
+        --names {params.LIST_sample_names} \
+        --ex_extension_files {input.TSV_extensions} \
+        --read_length {params.INT_read_length} \
+        --min_coverage_region {params.INT_min_length_mean_coverage} \
+        --min_mean_coverage {params.FLOAT_min_mean_exon_coverage} \
+        --ds_reg_for_no_coverage {params.INT_distal_downstream_extension} \
+        --min_cluster_distance {params.FLOAT_cluster_distance} \
+        --mse_ratio_threshold {params.FLOAT_coverage_mse_ratio_limit} \
+        --best_break_point_upstream_extension {params.INT_upstream_cluster_extension} \
+        --max_downstream_coverage {params.FLOAT_max_mean_coverage} \
+        --distal_sites {output.TSV_distal_sites} \
+        --processors {threads} \
+        1> {output.TSV_pas_relative_usages} \
+        2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Obtain relative positions of poly(A) sites
+##############################################################################
+
+rule PAQ_relative_pas_positions:
+    """
+    Obtain relative positions of the poly(A) sites within the terminal exons
+    """
+    input:
+        TSV_pas_epxression_values = os.path.join(
+            "{PAQ_output_dir}",
+            "tandem_pas_expression.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["PAQ_scripts_dir"],
+            "relative-pas-position-within-exon.py"
+        )
+
+    output:
+        TSV_relative_pas_positions = os.path.join(
+            "{PAQ_output_dir}",
+            "relative_pas_positions.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PAQ_output_dir}",
+            "cluster_log",
+            "PAQ_relative_pas_positions.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_relative_pas_positions.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_relative_pas_positions.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_relative_pas_positions.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --infile {input.TSV_pas_epxression_values} \
+        1> {output.TSV_relative_pas_positions} \
+        2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+###  Normalize expression
+##############################################################################
+
+rule PAQ_normalize_expression:
+    """
+    TPM normalize the expression values by the number of mapped reads
+    """
+    input:
+        TSV_pas_epxression_values = os.path.join(
+            "{PAQ_output_dir}",
+            "tandem_pas_expression.tsv"
+        ),
+        TSV_distal_sites = os.path.join(
+            "{PAQ_output_dir}",
+            "singular_pas_expression.tsv"
+        ),
+        # dummy link to make sure that relative positions are calculated
+        # even if this module is plugged into MAPP:
+        TSV_relative_pas_positions = os.path.join(
+            "{PAQ_output_dir}",
+            "relative_pas_positions.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["PAQ_scripts_dir"],
+            "normalize-pas-expression.py"
+        )
+
+    output:
+        TSV_normalized_expression_original = os.path.join(
+            "{PAQ_output_dir}",
+            "tandem_pas_expression_normalized_original.tsv"
+        ),
+        TSV_normalized_expression_pseudocount = os.path.join(
+            "{PAQ_output_dir}",
+            "tandem_pas_expression_normalized_pseudocount.tsv"
+        )
+
+    params:
+        FLOAT_expression_pseudocount = config["PAQ_expression_pseudocount"],
+        LOG_cluster_log = os.path.join(
+            "{PAQ_output_dir}",
+            "cluster_log",
+            "PAQ_normalize_expression.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_normalize_expression.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_normalize_expression.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_normalize_expression.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --tandem-pas-expression {input.TSV_pas_epxression_values} \
+        --distal-pas-expression {input.TSV_distal_sites} \
+        --expression-pseudocount {params.FLOAT_expression_pseudocount} \
+        --normalized-tandem-pas-expression-original {output.TSV_normalized_expression_original} \
+        --normalized-tandem-pas-expression-pseudocount {output.TSV_normalized_expression_pseudocount} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """

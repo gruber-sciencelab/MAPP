@@ -1,0 +1,50 @@
+# all backup emacs and vim files
+*~
+
+# mac files
+.DS_Store
+._*
+
+# Python cached data
+__pycache__/
+
+# snakemake internal directories
+.snakemake
+
+# snakemake DAGs
+dag.pdf
+
+# pipeline-execution-related
+.cache
+.java
+
+# Python-generated MAPP config file
+configs/config.yml
+
+# pipeline summary + summary logs
+summary/
+summary.tar.bz2
+logs/
+
+# all the default output diretories for separate modules
+modules/PREPROCESSING/output
+modules/CREATE_SITECOUNT_MATRICES/output
+modules/EXTRACT_AS_EXONS/output
+modules/PREPARE_TANDEM_PAS/output
+modules/QUANTIFICATION/output
+modules/PAQR/output
+modules/MAEI/output
+modules/KAPAC/output
+modules/REPORT_RESULTS/output
+
+# configuration files for dev purposes
+configs/test_config_template.yml
+modules/CREATE_SITECOUNT_MATRICES/configs/test_config.yml
+modules/EXTRACT_AS_EXONS/configs/test_config.yml
+modules/KAPAC/configs/test_config.yml
+modules/MAEI/configs/test_config.yml
+modules/PAQR/configs/test_config.yml
+modules/PREPARE_TANDEM_PAS/configs/test_config.yml
+modules/PREPROCESSING/configs/test_config.yml
+modules/QUANTIFICATION/configs/test_config.yml
+modules/REPORT_RESULTS/configs/test_config.yml

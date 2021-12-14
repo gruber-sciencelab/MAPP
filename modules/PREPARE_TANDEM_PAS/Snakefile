@@ -1,0 +1,370 @@
+##############################################################################
+#
+#   Snakemake pipeline:
+#   "Small set of rules to produce an approriate set of tandem poly(A) sites
+#   from the full annotation of sites and provided a gtf file"
+#
+#   AUTHOR: Ralf_Schmidt
+#   MODIFICATIONS: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 28-03-2020
+#   LICENSE: Apache_2.0
+#
+##############################################################################
+
+# imports
+import sys
+import os
+import traceback
+
+# local rules
+localrules: TPA_all, TPA_create_outdir
+
+def TPA_get_script_to_remove_overlappers(wildcards):
+    """
+    Selecting script file name based on the value in the config
+    """
+    if config['TPA_library_type'] == "stranded":
+        return os.path.join(
+            config["TPA_scripts_dir"],
+            "remove-overlapping-genes_strand-specific.pl"
+        )
+    else:
+        return os.path.join(
+            config["TPA_scripts_dir"],
+            "remove-overlapping-genes_strand-unspecific.pl"
+        )
+
+##############################################################################
+### Target rule with final output of the pipeline
+##############################################################################
+
+rule TPA_all:
+    """
+    Gathering all output
+    """
+    input:
+        BED_tandem_pas_terminal_exons_representative_sites = expand(
+            os.path.join(
+                "{TPA_output_dir}",
+                "tandem_pas.terminal_exons.representative_sites.bed"
+            ),
+            TPA_output_dir=config["TPA_outdir"]
+        )
+
+##############################################################################
+### Create directories for the results
+##############################################################################
+
+rule TPA_create_outdir:
+    """
+    Preparing directories for the results
+    """
+    output:
+        TEMP_ = temp(
+            os.path.join(
+                "{TPA_output_dir}",
+                "TPA_outdir"
+            )
+        )
+
+    params:
+        DIR_output_dir = "{TPA_output_dir}",
+        LOG_cluster_log = os.path.join(
+            "{TPA_output_dir}",
+            "cluster_log"
+        ),
+        LOG_local_log = os.path.join(
+            "{TPA_output_dir}",
+            "local_log"
+        )
+
+    threads: 1
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        mkdir -p {params.DIR_output_dir}; \
+        mkdir -p {params.LOG_cluster_log}; \
+        mkdir -p {params.LOG_local_log}; \
+        touch {output.TEMP_}
+        """
+
+##############################################################################
+### Select tandem poly(A) sites
+##############################################################################
+
+rule TPA_select_tandem_pas:
+    """
+    Selecting only pas which may be categorized as proximal/distal.
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{TPA_output_dir}",
+            "TPA_outdir"
+        ),
+        BED_pas_atlas = config["TPA_pas_atlas"],
+        GTF_annotation = config["TPA_genomic_annotation"],
+        SCRIPT_ = os.path.join(
+            config["TPA_scripts_dir"],
+            "select-pas-subset.pl"
+        )
+
+    output:
+        TSV_tandem_pas = os.path.join(
+            "{TPA_output_dir}",
+            "tandem_pas.tsv"
+        )
+
+    params:
+        STR_biotype_key = lambda wildcards:
+            "--type_id=" + config['TPA_biotype_key'] if 'TPA_biotype_key' in config else "",
+        STR_biotype_values = lambda wildcards:
+            " ".join(["--type=" + i for i in config['TPA_biotype_values']]) if "TPA_biotype_values" in config else "",
+        INT_min_number_of_protocols = config['TPA_min_protocols'],
+        INT_three_prime_end_offset = config["TPA_three_prime_end_offset"],
+        INT_transcript_locus_offset = config["TPA_transcript_locus_offset"],
+        LOG_cluster_log = os.path.join(
+            "{TPA_output_dir}",
+            "cluster_log",
+            "TPA_select_tandem_pas.log"
+        )
+
+    threads: 1
+
+    log:
+        # standard output stream is used by the script
+        LOG_local_stderr = os.path.join(
+            "{TPA_output_dir}",
+            "local_log",
+            "TPA_select_tandem_pas.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{TPA_output_dir}",
+            "local_log",
+            "TPA_select_tandem_pas.benchmark.log"
+        )
+
+    conda:
+        "env/Perl.yml"
+
+    singularity:
+        "docker://perl:5.26.2"
+
+    shell:
+        """
+        perl {input.SCRIPT_} \
+        --minLevel={params.INT_min_number_of_protocols} \
+        --annotation={input.GTF_annotation} \
+        {params.STR_biotype_key} \
+        {params.STR_biotype_values} \
+        --offset={params.INT_three_prime_end_offset} \
+        --locusExtension={params.INT_transcript_locus_offset} \
+        --nonredundant \
+        {input.BED_pas_atlas} \
+        1> {output.TSV_tandem_pas} \
+        2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+###  select tandem poly(A) sites of terminal exons
+##############################################################################
+
+rule TPA_select_terminal_exon_pas:
+    """
+    Filter pas and select only those on terminal exons
+    """
+    input:
+        TSV_tandem_pas = os.path.join(
+            "{TPA_output_dir}",
+            "tandem_pas.tsv"
+        )
+
+    output:
+        TSV_tandem_pas_terminal_exons = os.path.join(
+            "{TPA_output_dir}",
+            "tandem_pas.terminal_exons.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{TPA_output_dir}",
+            "cluster_log",
+            "TPA_select_terminal_exon_pas.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{TPA_output_dir}",
+            "local_log",
+            "TPA_select_terminal_exon_pas.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{TPA_output_dir}",
+            "local_log",
+            "TPA_select_terminal_exon_pas.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{TPA_output_dir}",
+            "local_log",
+            "TPA_select_terminal_exon_pas.benchmark.log"
+        )
+
+    run:
+        with open(input.TSV_tandem_pas, "r") as ifile, open(output.TSV_tandem_pas_terminal_exons, "w") as ofile, open(log.LOG_local_stderr, "w") as logfile:
+            try:
+                for line in ifile:
+                    # check if the exon that contains a given pas is
+                    # indeed the last exon of a transcript
+                    F = line.rstrip().split("\t")
+                    ex_id, ex_nr, total_exons, ex_start, ex_end = F[8].split(":")
+                    if int(total_exons) == int(ex_nr):
+                        ofile.write(line)
+            except Exception:
+                traceback.print_exc(file = logfile)
+                raise Exception(
+                    "Workflow error at rule: TPA_select_terminal_exon_pas"
+                )
+
+##############################################################################
+### Filter pas based on the annotation
+##############################################################################
+
+rule TPA_filter_on_ambiguous_annotation:
+    """
+    Intersect tandem poly(A) sites of terminal exons with the annotation.
+    Only retain exons that can be associated to a gene unambiguously.
+    """
+    input:
+        TSV_tandem_pas_terminal_exons = os.path.join(
+            "{TPA_output_dir}",
+            "tandem_pas.terminal_exons.tsv"
+        ),
+        GTF_annotation = config["TPA_genomic_annotation"],
+        SCRIPT_ = TPA_get_script_to_remove_overlappers
+
+    output:
+        BED_tandem_pas_terminal_exons_clean = os.path.join(
+            "{TPA_output_dir}",
+            "tandem_pas.terminal_exons.clean.bed"
+        )
+
+    params:
+        INT_downstream_extend = config['TPA_downstream_extend'],
+        LOG_cluster_log = os.path.join(
+            "{TPA_output_dir}",
+            "cluster_log",
+            "TPA_filter_on_ambiguous_annotation.log"
+        )
+
+    threads: 1
+
+    log:
+        # standard output stream is used by the script
+        LOG_local_stderr = os.path.join(
+            "{TPA_output_dir}",
+            "local_log",
+            "TPA_filter_on_ambiguous_annotation.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{TPA_output_dir}",
+            "local_log",
+            "TPA_filter_on_ambiguous_annotation.benchmark.log"
+        )
+
+    conda:
+        "env/Perl.yml"
+
+    singularity:
+        "docker://perl:5.26.2"
+
+    shell:
+        """
+        perl {input.SCRIPT_} \
+        --tandemPAS={input.TSV_tandem_pas_terminal_exons} \
+        --downstream_extend={params.INT_downstream_extend} \
+        {input.GTF_annotation} \
+        1> {output.BED_tandem_pas_terminal_exons_clean} \
+        2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+###  Extract coordinates of the representative sites into BED 
+##############################################################################
+
+rule TPA_extract_representative_sites_coord:
+    """
+    Read BED into a dataframe and adjust [start] [end] columns
+    """
+    input:
+        BED_tandem_pas_terminal_exons_clean = os.path.join(
+            "{TPA_output_dir}",
+            "tandem_pas.terminal_exons.clean.bed"
+        )
+
+    output:
+        BED_tandem_pas_terminal_exons_representative_sites = os.path.join(
+            "{TPA_output_dir}",
+            "tandem_pas.terminal_exons.representative_sites.bed"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{TPA_output_dir}",
+            "cluster_log",
+            "TPA_extract_representative_sites_coord.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{TPA_output_dir}",
+            "local_log",
+            "TPA_extract_representative_sites_coord.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{TPA_output_dir}",
+            "local_log",
+            "TPA_extract_representative_sites_coord.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{TPA_output_dir}",
+            "local_log",
+            "TPA_extract_representative_sites_coord.benchmark.log"
+        )
+
+    run:
+        with open(input.BED_tandem_pas_terminal_exons_clean, "r") as ifile, \
+                open(output.BED_tandem_pas_terminal_exons_representative_sites, "w") as ofile, \
+                open(log.LOG_local_stderr, "w") as logfile:
+            try:
+                for line in ifile:
+                    parsed_line = line.rstrip().split("\t")
+                    representative_site = int(parsed_line[3].split(":")[1])
+                    # extract the coordinates and overwrite BED columns:
+                    parsed_line[1] = str(representative_site)
+                    parsed_line[2] = str(representative_site+1)
+                    ofile.write("\t".join(parsed_line)+os.linesep)
+            except Exception:
+                traceback.print_exc(file = logfile)
+                raise Exception(
+                    "Workflow error at rule: TPA_extract_representative_sites_coord"
+                )

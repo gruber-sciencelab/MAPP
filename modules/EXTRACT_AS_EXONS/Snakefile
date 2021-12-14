@@ -1,0 +1,582 @@
+##############################################################################
+#
+#   Snakemake pipeline:
+#   Generating clusters of alternatively spliced exons.
+#   Extracting coordinates of 3'ss and 5'ss into a BED format
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 26-03-2020
+#   LICENSE: Apache_2.0
+#
+##############################################################################
+
+# imports
+import sys
+import os
+
+# local rules
+localrules: ASE_all, ASE_create_outdir
+
+##############################################################################
+### Target rule with final output of the pipeline
+##############################################################################
+
+rule ASE_all:
+    """
+    Gathering all output
+    """
+    input:
+        BED_ss3 = expand(
+            os.path.join(
+                "{ASE_output_dir}",
+                "3ss.bed"
+            ),
+            ASE_output_dir=config["ASE_outdir"]
+        ),
+        BED_ss5 = expand(
+            os.path.join(
+                "{ASE_output_dir}",
+                "5ss.bed"
+            ),
+            ASE_output_dir=config["ASE_outdir"]
+        )
+
+##############################################################################
+### Create directories for the results
+##############################################################################
+
+rule ASE_create_outdir:
+    """
+    Preparing directories for the results
+    """
+    output:
+        TEMP_ = temp(
+            os.path.join(
+                "{ASE_output_dir}",
+                "ASE_outdir"
+            )
+        )
+
+    params:
+        DIR_output_dir = "{ASE_output_dir}",
+        LOG_cluster_log = os.path.join(
+            "{ASE_output_dir}",
+            "cluster_log"
+        ),
+        LOG_local_log = os.path.join(
+            "{ASE_output_dir}",
+            "local_log"
+        )
+
+    threads: 1
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        mkdir -p {params.DIR_output_dir}; \
+        mkdir -p {params.LOG_cluster_log}; \
+        mkdir -p {params.LOG_local_log}; \
+        touch {output.TEMP_}
+        """
+
+##############################################################################
+### Build genome index
+##############################################################################
+
+rule ASE_build_genome_index:
+    """
+    Building genome index with samtools: .fa -> .fai
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{ASE_output_dir}",
+            "ASE_outdir"
+        ),
+        FASTA_genome = config["ASE_genomic_sequence"]
+
+    output:
+        FAI_genome_index = os.path.join(
+            "{ASE_output_dir}",
+            "genome.fa.fai"
+        )
+
+    params:
+        DIR_output_dir = "{ASE_output_dir}",
+        LOG_cluster_log = os.path.join(
+            "{ASE_output_dir}",
+            "cluster_log",
+            "ASE_build_genome_index.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_build_genome_index.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_build_genome_index.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_build_genome_index.benchmark.log"
+        )
+
+    conda:
+        "env/samtools.yml"
+
+    singularity:
+        "docker://zavolab/samtools:1.10"
+
+    shell:
+        # copy genome workaround due to samtools constraints
+        """
+        (cp {input.FASTA_genome} {params.DIR_output_dir}/genome.fa && \
+        samtools faidx {params.DIR_output_dir}/genome.fa && \
+        rm -rf {params.DIR_output_dir}/genome.fa) \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Generate the set of alternatively spliced exons
+##############################################################################
+
+rule ASE_generate_skipped_exon_events:
+    """
+    Extracting skipped exon events with SUPPA
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{ASE_output_dir}",
+            "ASE_outdir"
+        )
+
+    output:
+        IOE_skipped_exon_events = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_strict.ioe"
+        )
+
+    params:
+        STR_output_prefix = os.path.join(
+            "{ASE_output_dir}",
+            "events"
+        ), # workaround due to SUPPA file creation
+        GTF_annotation = config["ASE_genomic_annotation"],
+        LOG_cluster_log = os.path.join(
+            "{ASE_output_dir}",
+            "cluster_log",
+            "ASE_generate_skipped_exon_events.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_generate_skipped_exon_events.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_generate_skipped_exon_events.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_generate_skipped_exon_events.benchmark.log"
+        )
+
+    conda:
+        "env/suppa.yml"
+
+    singularity:
+        "docker://zavolab/suppa:2.3"
+
+    shell:
+        """
+        suppa.py generateEvents \
+        --input-file {params.GTF_annotation} \
+        --output-file {params.STR_output_prefix} \
+        --event-type SE \
+        --boundary S \
+        --format ioe \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Filter the set of alternatively spliced exons
+##############################################################################
+
+rule ASE_filter_events:
+    """
+    Filtering SUPPA skipped exon events for a clean input for MAPP
+    """
+    input:
+        IOE_skipped_exon_events = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_strict.ioe"
+        ),
+        FAI_genome_index = os.path.join(
+            "{ASE_output_dir}",
+            "genome.fa.fai"
+        ),
+        SCRIPT_ = os.path.join(
+            config["ASE_scripts_dir"],
+            "filter-exons.py"
+        )
+
+    output:
+        TSV_filtered_SE_events = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_filtered.tsv"
+        )
+
+    params:
+        GTF_annotation = config["ASE_genomic_annotation"],
+        STR_transcript_biotypes = config["ASE_transcript_biotypes"],
+        INT_region_size_3ss_up = config["ASE_3ss_region_up"],
+        INT_region_size_3ss_down = config["ASE_3ss_region_down"],
+        INT_region_size_5ss_up = config["ASE_5ss_region_up"],
+        INT_region_size_5ss_down = config["ASE_5ss_region_down"],
+        LOG_filtering_log = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_filtering.log"
+        ),
+        LOG_cluster_log = os.path.join(
+            "{ASE_output_dir}",
+            "cluster_log",
+            "ASE_filter_events.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_filter_events.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_filter_events.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_filter_events.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python -B {input.SCRIPT_} \
+        --in {input.IOE_skipped_exon_events} \
+        --gtf {params.GTF_annotation} \
+        --out {output.TSV_filtered_SE_events} \
+        --region_size_3ss_up {params.INT_region_size_3ss_up} \
+        --region_size_3ss_down {params.INT_region_size_3ss_down} \
+        --region_size_5ss_up {params.INT_region_size_5ss_up} \
+        --region_size_5ss_down {params.INT_region_size_5ss_down} \
+        --biotype_filters {params.STR_transcript_biotypes} \
+        --fai {input.FAI_genome_index} \
+        --filtering-logfile {params.LOG_filtering_log} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+###  Cluster overlapping exons
+##############################################################################
+
+rule ASE_cluster_events:
+    """
+    Clustering higly overlapping clean SE events
+    """
+    input:
+        TSV_filtered_SE_events = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_filtered.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["ASE_scripts_dir"],
+            "cluster-events.py"
+        )
+
+    output:
+        TSV_clustered_SE_events = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_clustered.tsv"
+        )
+
+    params:
+        FLOAT_max_distance = config["ASE_clustering_max_distance"],
+        LOG_cluster_log = os.path.join(
+            "{ASE_output_dir}",
+            "cluster_log",
+            "ASE_cluster_events.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_cluster_events.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_cluster_events.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_cluster_events.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --events {input.TSV_filtered_SE_events} \
+        --outfile {output.TSV_clustered_SE_events} \
+        --max-distance {params.FLOAT_max_distance} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+###  Select clusters representatives
+##############################################################################
+
+rule ASE_select_representative_events:
+    """
+    Selecting 'most common' event of each cluster based on the annotation
+    """
+    input:
+        TSV_clustered_SE_events = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_clustered.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["ASE_scripts_dir"],
+            "select-cluster-representatives.py"
+        )
+
+    output:
+        TSV_selected_SE_events = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_selected.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{ASE_output_dir}",
+            "cluster_log",
+            "ASE_select_representative_events.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_select_representative_events.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_select_representative_events.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_select_representative_events.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --infile {input.TSV_clustered_SE_events} \
+        --outfile {output.TSV_selected_SE_events} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+###  Reformat selected exons into BED file
+##############################################################################
+
+rule ASE_format_events_into_bed:
+    """
+    Reformatting selected set of representative exons into BED
+    """
+    input:
+        TSV_selected_SE_events = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_selected.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["ASE_scripts_dir"],
+            "convert-to-bed.py"
+        )
+
+    output:
+        BED_selected_SE_events = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_selected.bed"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{ASE_output_dir}",
+            "cluster_log",
+            "ASE_format_events_into_bed.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_format_events_into_bed.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_format_events_into_bed.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_format_events_into_bed.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --events {input.TSV_selected_SE_events} \
+        --outfile {output.BED_selected_SE_events} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Extract coodriantes of 3'ss and 5'ss of the selected exons
+##############################################################################
+
+rule ASE_extract_splice_sites_coordinates:
+    """
+    Extracting coordinates of splice-sites into separate BED files
+    """
+    input:
+        BED_selected_SE_events = os.path.join(
+            "{ASE_output_dir}",
+            "events_SE_selected.bed"
+        )
+
+    output:
+        BED_ss3 = os.path.join(
+            "{ASE_output_dir}",
+            "3ss.bed"
+        ),
+        BED_ss5 = os.path.join(
+            "{ASE_output_dir}",
+            "5ss.bed"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{ASE_output_dir}",
+            "cluster_log",
+            "ASE_extract_splice_sites_coordinates.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_extract_splice_sites_coordinates.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_extract_splice_sites_coordinates.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{ASE_output_dir}",
+            "local_log",
+            "ASE_extract_splice_sites_coordinates.benchmark.log"
+        )
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        ( \
+        cat {input.BED_selected_SE_events} \
+        | awk -F '\t' '{{ if ($6 == "+") print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$6; else if ($6 == "-") print $1"\t"$3-1"\t"$3"\t"$4"\t"$5"\t"$6}}' \
+        1> {output.BED_ss3} && \
+        cat {input.BED_selected_SE_events} \
+        | awk -F '\t' '{{ if ($6 == "+") print $1"\t"$3-1"\t"$3"\t"$4"\t"$5"\t"$6; else if ($6 == "-") print $1"\t"$2"\t"$2+1"\t"$4"\t"$5"\t"$6}}' \
+        1> {output.BED_ss5} \
+        ) \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """

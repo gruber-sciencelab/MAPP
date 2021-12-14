@@ -1,0 +1,355 @@
+###############################################################################
+#
+#   GitLab CI configuration
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 11-11-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# docker image
+image: continuumio/miniconda3:4.8.2
+
+before_script:
+  # prepare the os:
+  - apt update && apt install -y gcc
+  - conda init bash && source ~/.bashrc && echo $CONDA_DEFAULT_ENV
+  # install mamba package manager
+  - conda install -n base -c conda-forge mamba
+  # create and activate main MAPP env:
+  - bash scripts/create-conda-environment.sh
+  - conda activate mapp
+  # download genome sequence and GTF-formatted annotation:
+  - bash scripts/download-ENSEMBL-resources.sh -s hsa -o resources_ENSEMBL_hsa
+  - bash scripts/download-ENSEMBL-resources.sh -s mmu -o resources_ENSEMBL_mmu
+  # download the atlas of PolyA-sites:
+  - bash scripts/download-polyA-atlas.sh -s hsa -o ATLAS2_hsa
+  - bash scripts/download-polyA-atlas.sh -s mmu -o ATLAS2_mmu
+  # download and parse PWMs from ATtRACT database:
+  - bash scripts/download-ATtRACT-motifs.sh -s hsa -o ATtRACT_hsa
+  - bash scripts/download-ATtRACT-motifs.sh -s mmu -o ATtRACT_mmu
+
+MAPP_test1:
+  script:
+    #
+    # test1: parameters set 1
+    #
+    # create the main MAPP configfile:
+    - >
+      python scripts/create-main-config-file.py
+      --config-template .test/integration/MAPP/config_template_1.yml
+      --pipeline-configfile configs/config.yml
+      --cluster-configfile configs/cluster_config.json
+    # snakemake DAG takes soo much time for the whole MAPP
+    # run snakemake rulegraph instead (test script):
+    - bash execution/snakemake_rulegraph_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=Snakefile
+      --configfile=configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda env for the final MAPP-level rule
+    # with summary archive compression:
+    - conda env create -f env/tar.yml
+
+MAPP_test2:
+  script:
+    #
+    # test2: parameters set 2
+    #
+    # for this test it is required that we set the
+    # modification date of resources files as older than
+    # the pipeline files (expected situation):
+    - touch -a -m -t 200001010000.00 resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf
+    - touch -a -m -t 200001010000.00 resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa
+    - touch -a -m -t 200001010000.00 ATLAS2_hsa/reformatted_filtered_atlas.bed
+    # according to the notes in the pipeline configuration:
+    # comment-out ASE, TPA and CSM modules inclusion from the main Snakefile:
+    - sed '52 {s/^/#/}' -i Snakefile
+    - sed '53 {s/^/#/}' -i Snakefile
+    - sed '56 {s/^/#/}' -i Snakefile
+    # create the main MAPP configfile:
+    - >
+      python scripts/create-main-config-file.py
+      --config-template .test/integration/MAPP/config_template_2.yml
+      --pipeline-configfile configs/config.yml
+      --cluster-configfile configs/cluster_config.json
+    # snakemake DAG takes soo much time for the whole MAPP
+    # run snakemake rulegraph instead (test script):
+    - bash execution/snakemake_rulegraph_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=Snakefile
+      --configfile=configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda env for the final MAPP-level rule
+    # with summary archive compression:
+    - conda env create -f env/tar.yml
+
+PQA_module:
+  script:
+    # overwrite w/ the test config:
+    - cp .test/integration/module_PQA/config.yml modules/PREPROCESSING/configs/config.yml
+    # cd into module exec directory:
+    - cd /builds/zavolan_group/pipelines/mapp/modules/PREPROCESSING/execution
+    # snakemake DAG run (test script):
+    - bash snakemake_dag_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda envs for the rules:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --use-conda
+      --conda-create-envs-only
+      --cores 8
+
+ASE_module:
+  script:
+    # overwrite w/ the test config:
+    - cp .test/integration/module_ASE/config.yml modules/EXTRACT_AS_EXONS/configs/config.yml
+    # cd into module exec directory:
+    - cd /builds/zavolan_group/pipelines/mapp/modules/EXTRACT_AS_EXONS/execution
+    # snakemake DAG run (test script):
+    - bash snakemake_dag_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda envs for the rules:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --use-conda
+      --conda-create-envs-only
+      --cores 8
+
+TPA_module:
+  script:
+    # overwrite w/ the test config:
+    - cp .test/integration/module_TPA/config.yml modules/PREPARE_TANDEM_PAS/configs/config.yml
+    # cd into module exec directory:
+    - cd /builds/zavolan_group/pipelines/mapp/modules/PREPARE_TANDEM_PAS/execution
+    # snakemake DAG run (test script):
+    - bash snakemake_dag_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda envs for the rules:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --use-conda
+      --conda-create-envs-only
+      --cores 8
+
+QEI_module:
+  script:
+    # overwrite w/ the test config:
+    - cp .test/integration/module_QEI/config.yml modules/QUANTIFICATION/configs/config.yml
+    # cd into module exec directory:
+    - cd /builds/zavolan_group/pipelines/mapp/modules/QUANTIFICATION/execution
+    # snakemake DAG run (test script):
+    - bash snakemake_dag_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda envs for the rules:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --use-conda
+      --conda-create-envs-only
+      --cores 8
+
+PAQ_module:
+  script:
+    # overwrite w/ the test config:
+    - cp .test/integration/module_PAQ/config.yml modules/PAQR/configs/config.yml
+    # cd into module exec directory:
+    - cd /builds/zavolan_group/pipelines/mapp/modules/PAQR/execution
+    # snakemake DAG run (test script):
+    - bash snakemake_dag_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda envs for the rules:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --use-conda
+      --conda-create-envs-only
+      --cores 8
+
+CSM_module:
+  script:
+    #
+    # test1: kmers
+    #
+    # overwrite w/ the test config:
+    - cp .test/integration/module_CSM/config1_kmers.yml modules/CREATE_SITECOUNT_MATRICES/configs/config.yml
+    # cd into module exec directory:
+    - cd /builds/zavolan_group/pipelines/mapp/modules/CREATE_SITECOUNT_MATRICES/execution
+    # snakemake DAG run (test script):
+    - bash snakemake_dag_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda envs for the rules:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --use-conda
+      --conda-create-envs-only
+      --cores 8
+    - cd /builds/zavolan_group/pipelines/mapp
+    #
+    # test2: pwms
+    #
+    # overwrite w/ the test config:
+    - cp .test/integration/module_CSM/config2_pwms.yml modules/CREATE_SITECOUNT_MATRICES/configs/config.yml
+    # cd into module exec directory:
+    - cd /builds/zavolan_group/pipelines/mapp/modules/CREATE_SITECOUNT_MATRICES/execution
+    # snakemake DAG run (test script):
+    - bash snakemake_dag_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda envs for the rules:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --use-conda
+      --conda-create-envs-only
+      --cores 8
+    - cd /builds/zavolan_group/pipelines/mapp
+
+MAE_module:
+  script:
+    # overwrite w/ the test config:
+    - cp .test/integration/module_MAE/config.yml modules/MAEI/configs/config.yml
+    # cd into module exec directory:
+    - cd /builds/zavolan_group/pipelines/mapp/modules/MAEI/execution
+    # snakemake DAG run (test script):
+    - bash snakemake_dag_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda envs for the rules:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --use-conda
+      --conda-create-envs-only
+      --cores 8
+
+KPC_module:
+  script:
+    # overwrite w/ the test config:
+    - cp .test/integration/module_KPC/config.yml modules/KAPAC/configs/config.yml
+    # cd into module exec directory:
+    - cd /builds/zavolan_group/pipelines/mapp/modules/KAPAC/execution
+    # snakemake DAG run (test script):
+    - bash snakemake_dag_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda envs for the rules:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --use-conda
+      --conda-create-envs-only
+      --cores 8
+
+RES_module:
+  script:
+    # overwrite w/ the test config:
+    - cp .test/integration/module_RES/config.yml modules/REPORT_RESULTS/configs/config.yml
+    # cd into module exec directory:
+    - cd /builds/zavolan_group/pipelines/mapp/modules/REPORT_RESULTS/execution
+    # snakemake DAG run (test script):
+    - bash snakemake_dag_run.sh
+    # snakemake dry run:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --printshellcmds
+      --dryrun
+      --verbose
+    # build conda envs for the rules:
+    - >
+      snakemake
+      --snakefile=../Snakefile
+      --configfile=../configs/config.yml
+      --use-conda
+      --conda-create-envs-only
+      --cores 8
+
+...

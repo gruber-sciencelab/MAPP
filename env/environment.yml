@@ -1,0 +1,36 @@
+###############################################################################
+#
+#   Packages in conda virtual environment for MAPP
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 20-03-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+name: mapp
+
+channels:
+  - bioconda
+  - conda-forge
+
+dependencies:
+  - bash=5.0.018
+  - snakemake=6.9.1
+  - mamba=0.13.0
+  - unzip=6.0
+  - python=3.9.4
+  - pandas=1.2.4
+  - pyyaml=5.4.1
+  - jinja2=3.0.1
+  - graphviz=2.47.2
+  - curl=7.77.0
+  - r-base=4.1.0
+  - r-optparse=1.6.6
+  - bioconductor-seqlogo=1.58.0
+
+...

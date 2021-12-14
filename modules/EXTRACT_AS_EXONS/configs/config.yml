@@ -1,0 +1,41 @@
+###############################################################################
+#
+#   Config options for the snakemake pipeline
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 24-03-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# path to the directory with all the scripts for this pipeline
+# (relative to the 'execution' directory)
+ASE_scripts_dir: "../scripts"
+
+# path for the output directory
+# (relative to the 'execution' directory)
+ASE_outdir: "../output"
+
+# path to the genomic annotation in GTF format
+ASE_genomic_annotation: ""
+
+# path to the genomic sequence in fasta format
+ASE_genomic_sequence: ""
+
+# regions of interest around the splice sites
+ASE_3ss_region_up: "150"
+ASE_3ss_region_down: "50"
+ASE_5ss_region_up: "50"
+ASE_5ss_region_down: "150"
+
+# transcript biotype filters for the GTF annotation
+ASE_transcript_biotypes: "protein_coding"
+
+# maximal distance between exons belonging to one cluster
+ASE_clustering_max_distance: "0.05"
+
+...

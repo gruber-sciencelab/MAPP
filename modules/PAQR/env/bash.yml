@@ -1,0 +1,23 @@
+###############################################################################
+#
+#   Software to be installed in the environment
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 23-07-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+name: bash-4-4-18
+
+channels:
+  - conda-forge
+
+dependencies:
+  - bash=4.4.18
+
+...

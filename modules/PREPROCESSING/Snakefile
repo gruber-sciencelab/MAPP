@@ -1,0 +1,1636 @@
+##############################################################################
+#
+#   Snakemake pipeline:
+#   Initial processing and quality analysis of RNA-Seq data
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 25-04-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+
+# imports
+import sys
+import os
+import traceback
+import pandas as pd
+
+# local rules
+localrules: PQA_all, PQA_create_outdir
+
+def get_all_samples_IDs():
+    """
+    Selecting IDs from the design file (all samples)
+    """
+    design_table = pd.read_csv(config["PQA_design_file"], sep="\t")
+    return list(design_table["sample"])
+
+def get_all_paired_end_samples_IDs():
+    """
+    Selecting IDs from the design file (paired-end samples)
+    """
+    design_table = pd.read_csv(config["PQA_design_file"], sep="\t", \
+        na_values=['nan'], keep_default_na=False)
+    IDs = []
+    for i, row in design_table.iterrows():
+        if row["fq1"] != "" and row["fq2"] != "":
+            IDs.append(row["sample"])
+    return IDs
+
+def get_all_single_end_samples_IDs():
+    """
+    Selecting IDs from the design file (single-end samples)
+    """
+    design_table = pd.read_csv(config["PQA_design_file"], sep="\t", \
+        na_values=['nan'], keep_default_na=False)
+    IDs = []
+    for i, row in design_table.iterrows():
+        if (row["fq1"] == "") ^ (row["fq2"] == ""):
+            IDs.append(row["sample"])
+    return IDs
+
+def get_all_fastq_files_per_sample(wildcards):
+    """
+    Returning paths to all fastq files for a given sample
+    """
+    design_table = pd.read_csv(config["PQA_design_file"], sep="\t", \
+        index_col=0, na_values=['nan'], keep_default_na=False)
+    sample_row = design_table.loc[wildcards.sample]
+    fq_paths = [sample_row["fq1"], sample_row["fq2"]]
+    # in case of single-end data there will be at most one empty string
+    fq_paths = [i for i in fq_paths if i!=""]
+    return fq_paths
+
+def get_all_fastq_files():
+    """
+    Collecting all names of fastq files from the design table
+    """
+    design_table = pd.read_csv(config["PQA_design_file"], sep="\t", \
+        na_values=['nan'], keep_default_na=False)
+    fq_paths = list(design_table["fq1"]) + list(design_table["fq2"])
+    # filter out empty strings from the single-end samples
+    fq_paths = [i for i in fq_paths if i!=""]
+    # select only file names
+    fq_paths = [i.split("/")[-1].split(".")[0] for i in fq_paths]
+    return fq_paths
+
+def get_rnaseqc_unpaired_flag(wildcards):
+    """
+    Appending a flag for the rnaseqc command for unpaired samples analysis
+    """
+    if wildcards.sample in get_all_paired_end_samples_IDs():
+        return ""
+    # else:
+    assert wildcards.sample in get_all_single_end_samples_IDs()
+    return "--unpaired"
+
+def get_adapter1_paired_end(wildcards):
+    """
+    Selecting adapter sequence 1 for a particular paired-end sample
+    """
+    design_table = pd.read_csv(config["PQA_design_file"], \
+        sep="\t", index_col=0)
+    return design_table.loc[wildcards.sample]["adapter1"]
+
+def get_adapter2_paired_end(wildcards):
+    """
+    Selecting adapter sequence 2 for a particular paired-end sample
+    """
+    design_table = pd.read_csv(config["PQA_design_file"], \
+        sep="\t", index_col=0)
+    return design_table.loc[wildcards.sample]["adapter2"]
+
+def get_adapter_single_end(wildcards):
+    """
+    Selecting adapter sequence for a particular single-end sample
+    """
+    design_table = pd.read_csv(config["PQA_design_file"], \
+        sep="\t", index_col=0)
+    if design_table.loc[wildcards.sample]["adapter1"] != "":
+        return design_table.loc[wildcards.sample]["adapter1"]
+    # else:
+    assert design_table.loc[wildcards.sample]["adapter2"] != ""
+    return design_table.loc[wildcards.sample]["adapter2"]
+
+def get_trimmed_fastq_paths(wildcards):
+    """
+    Generating paths to the adapter-trimmed, polyA-trimmed
+    fastq files for a given sample
+    """
+    design_table = pd.read_csv(config["PQA_design_file"], sep="\t", \
+        index_col=0, na_values=['nan'], keep_default_na=False)
+    sample_row = design_table.loc[wildcards.sample]
+    if sample_row["fq1"] != "" and sample_row["fq2"] != "":
+        # paired-end sample
+        return expand(
+            os.path.join(
+                config["PQA_outdir"],
+                "tail_trimmed",
+                "{sample}.{group}.fastq.gz"
+            ),
+            sample = wildcards.sample, group = ["R","F"]
+        )
+    # else: single end sample
+    return expand(
+        os.path.join(
+            config["PQA_outdir"],
+            "tail_trimmed",
+            "{sample}._.fastq.gz"
+        ),
+        sample = wildcards.sample
+    )
+
+def get_fastq_path(wildcards):
+    """
+    Returning full path to a given fastq file
+    """
+    design_table = pd.read_csv(config["PQA_design_file"], sep="\t", \
+        index_col=0, na_values=['nan'], keep_default_na=False)
+    for i, row in design_table.iterrows():
+        if wildcards.fq_file in row["fq1"]:
+            return row["fq1"]
+        if wildcards.fq_file in row["fq2"]:
+            return row["fq2"]
+
+##############################################################################
+### Target rule with final output of the pipeline
+##############################################################################
+
+rule PQA_all:
+    """
+    Gathering all output
+    """
+    input:
+        BAM_transcriptome_alignments = expand(
+            os.path.join(
+                "{PQA_output_dir}",
+                "alignments",
+                "{sample}",
+                "{sample}.Aligned.toTranscriptome.out.bam"
+            ),
+            PQA_output_dir = config["PQA_outdir"],
+            sample = get_all_samples_IDs()
+        ),
+        TSV_new_design_table = expand(
+            os.path.join(
+                "{PQA_output_dir}",
+                "design_table_quality_filtered.tsv"
+            ),
+            PQA_output_dir = config["PQA_outdir"]
+        )
+
+##############################################################################
+### Create directories for the results
+##############################################################################
+
+rule PQA_create_outdir:
+    """
+    Preparing directories for the results
+    """
+    output:
+        TEMP_ = temp(
+            os.path.join(
+                "{PQA_output_dir}",
+                "PQA_outdir"
+            )
+        )
+
+    params:
+        DIR_output_dir = "{PQA_output_dir}",
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log"
+        ),
+        LOG_local_log = os.path.join(
+            "{PQA_output_dir}",
+            "local_log"
+        )
+
+    threads: 1
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        mkdir -p {params.DIR_output_dir}; \
+        mkdir -p {params.LOG_cluster_log}; \
+        mkdir -p {params.LOG_local_log}; \
+        touch {output.TEMP_}
+        """
+
+##############################################################################
+### Create a genomic index for the alignments
+##############################################################################
+
+rule PQA_create_genome_index:
+    """
+    Creating a genomic index for the alignments with STAR
+    """
+    input:
+        FASTA_genomic_sequence = config["PQA_genomic_sequence"],
+        GTF_genomic_annotation = config["PQA_genomic_annotation"]
+
+    output:
+        DIR_genome_index = directory(config["PQA_index"])
+
+    params:
+        TXT_STAR_auto_log = "Log.out",
+        INT_sjdbOverhang = config["PQA_sjdbOverhang"],
+        LOG_cluster_log = os.path.join(
+            config["PQA_outdir"],
+            "cluster_log",
+            "PQA_create_genome_index.log"
+        )
+
+    threads: 8
+
+    log:
+        LOG_local_stdout = os.path.join(
+            config["PQA_outdir"],
+            "local_log",
+            "PQA_create_genome_index.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            config["PQA_outdir"],
+            "local_log",
+            "PQA_create_genome_index.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            config["PQA_outdir"],
+            "local_log",
+            "PQA_create_genome_index.benchmark.log"
+        )
+
+    conda:
+        "env/STAR.yml"
+
+    singularity:
+        "docker://zavolab/star:2.7.1a"
+
+    shell:
+        """
+        (mkdir -p {output.DIR_genome_index} \
+        && \
+        chmod -R 777 {output.DIR_genome_index} \
+        && \
+        STAR \
+        --runMode genomeGenerate \
+        --sjdbOverhang {params.INT_sjdbOverhang} \
+        --genomeDir {output.DIR_genome_index} \
+        --genomeFastaFiles {input.FASTA_genomic_sequence} \
+        --sjdbGTFfile {input.GTF_genomic_annotation} \
+        --runThreadN {threads} \
+        && \
+        mv {params.TXT_STAR_auto_log} {output.DIR_genome_index}/{params.TXT_STAR_auto_log}) \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr} \
+        || rm -rf {output.DIR_genome_index}
+        """
+
+##############################################################################
+### Prepare a text file with plausible adapter sequences
+##############################################################################
+
+rule PQA_prepare_adapters_textfiles:
+    """
+    Merging the list of commonly used adapters
+    with samples' adapters from the design table. 
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{PQA_output_dir}",
+            "PQA_outdir"
+        ),
+        TSV_design_file = config["PQA_design_file"],
+        TXT_adapters_sequences = config["PQA_adapters_sequences"]
+
+    output:
+        TXT_adapters_sequences = os.path.join(
+            "{PQA_output_dir}",
+            "adapters.txt"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_prepare_adapters_textfiles.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_prepare_adapters_textfiles.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_prepare_adapters_textfiles.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_prepare_adapters_textfiles.benchmark.log"
+        )
+
+    run:
+        with open(log.LOG_local_stderr, "w") as logfile:
+            try:
+                # read the adapters list
+                with open(input.TXT_adapters_sequences) as f:
+                    adapters_list = [x for x in f.read().splitlines()]
+                # read the design table
+                design_table = pd.read_csv(input.TSV_design_file, \
+                    sep="\t", na_values=['nan'], keep_default_na=False)
+                # parse the adapters from the design table
+                for i, row in design_table.iterrows():
+                    adapters_list.append(row["adapter1"])
+                    adapters_list.append(row["adapter2"])
+                # remove duplicates
+                adapters_list = list(set(adapters_list))
+                # write the adapters to the textfile
+                with open(output.TXT_adapters_sequences, "w") as f:
+                    for a in adapters_list:
+                        if a!="":
+                            f.write(a + "\t" + a + os.linesep)
+            except Exception:
+                traceback.print_exc(file = logfile)
+                raise Exception(
+                    "Workflow error at rule: PQA_prepare_adapters_textfiles"
+                )
+
+##############################################################################
+### Raw data quality analysis
+##############################################################################
+
+rule PQA_run_FastQC:
+    """
+    Running FastQC on input fastq files.
+    """
+    input:
+        TXT_adapters_sequences = os.path.join(
+            "{PQA_output_dir}",
+            "adapters.txt"
+        ),
+        STRING_fastq_path = \
+            lambda wildcards: get_fastq_path(wildcards)
+
+    output:
+        HTML_fastqc_report = os.path.join(
+            "{PQA_output_dir}",
+            "fastqc",
+            "{fq_file}",
+            "{fq_file}_fastqc.html"
+        )
+
+    params:
+        DIR_analysis_report = os.path.join(
+            "{PQA_output_dir}",
+            "fastqc",
+            "{fq_file}"
+        ),
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_run_FastQC.{fq_file}.log"
+        )
+
+    threads: 4
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_run_FastQC.{fq_file}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_run_FastQC.{fq_file}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_run_FastQC.{fq_file}.benchmark.log"
+        )
+
+    conda:
+        "env/fastqc.yml"
+
+    singularity:
+        "docker://biocontainers/fastqc:v0.11.8dfsg-2-deb_cv1"
+
+    shell:
+        """
+        fastqc {input.STRING_fastq_path} \
+        --outdir {params.DIR_analysis_report} \
+        --format fastq \
+        --nogroup \
+        --extract \
+        --adapters {input.TXT_adapters_sequences} \
+        --threads {threads} \
+        --kmers 7 \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Remove adapters from paired-end reads
+##############################################################################
+
+rule PQA_remove_adapters_pe:
+    """
+    Running Cutadapt with extracted adapter sequences
+    for a given paired-end RNA-Seq sample.
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{PQA_output_dir}",
+            "PQA_outdir"
+        ),
+        FASTQ_sample = get_all_fastq_files_per_sample,
+        TSV_design_file = config["PQA_design_file"]
+
+    output:
+        FASTQ_forward_reads = os.path.join(
+            "{PQA_output_dir}",
+            "adapter_trimmed",
+            "{sample}.F.fastq.gz"
+        ),
+        FASTQ_reverse_reads = os.path.join(
+            "{PQA_output_dir}",
+            "adapter_trimmed",
+            "{sample}.R.fastq.gz"
+        )
+
+    params:
+        STRING_adapter1 = get_adapter1_paired_end,
+        STRING_adapter2 = get_adapter2_paired_end,
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_remove_adapters_pe.{sample}.log"
+        )
+
+    threads: 8
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_adapters_pe.{sample}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_adapters_pe.{sample}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_adapters_pe.{sample}.benchmark.log"
+        )
+
+    conda:
+        "env/cutadapt.yml"
+
+    singularity:
+        "docker://zavolab/cutadapt:1.16"
+
+    shell:
+        """
+        cutadapt \
+        -b {params.STRING_adapter1} \
+        -B {params.STRING_adapter2} \
+        -e 0.1 \
+        --pair-filter=any \
+        --times 1 \
+        --trim-n \
+        --cores={threads} \
+        --minimum-length 10 \
+        -o {output.FASTQ_forward_reads} \
+        -p {output.FASTQ_reverse_reads} \
+        {input.FASTQ_sample} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Remove adapters from single-end reads
+##############################################################################
+
+rule PQA_remove_adapters_se:
+    """
+    Running Cutadapt with extracted adapter sequences
+    for a given single-end RNA-Seq sample.
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{PQA_output_dir}",
+            "PQA_outdir"
+        ),
+        FASTQ_sample = get_all_fastq_files_per_sample,
+        TSV_design_file = config["PQA_design_file"]
+
+    output:
+        FASTQ_reads = os.path.join(
+            "{PQA_output_dir}",
+            "adapter_trimmed",
+            "{sample}._.fastq.gz"
+        )
+
+    params:
+        STRING_adapter = get_adapter_single_end,
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_remove_adapters_se.{sample}.log"
+        )
+
+    threads: 8
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_adapters_se.{sample}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_adapters_se.{sample}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_adapters_se.{sample}.benchmark.log"
+        )
+
+    conda:
+        "env/cutadapt.yml"
+
+    singularity:
+        "docker://zavolab/cutadapt:1.16"
+
+    shell:
+        """
+        cutadapt \
+        -b {params.STRING_adapter} \
+        -e 0.1 \
+        --times 1 \
+        --trim-n \
+        --cores={threads} \
+        --minimum-length 10 \
+        -o {output.FASTQ_reads} \
+        {input.FASTQ_sample} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Remove polyA & polyT tails from paired-end reads
+##############################################################################
+
+rule PQA_remove_polyA_polyT_tails_pe:
+    """
+    Running Cutadapt with polyA / polyT sequences
+    for a given paired-end RNA-Seq sample.
+    """
+    input:
+        FASTQ_forward_reads = os.path.join(
+            "{PQA_output_dir}",
+            "adapter_trimmed",
+            "{sample}.F.fastq.gz"
+        ),
+        FASTQ_reverse_reads = os.path.join(
+            "{PQA_output_dir}",
+            "adapter_trimmed",
+            "{sample}.R.fastq.gz"
+        )
+
+    output:
+        FASTQ_forward_reads = os.path.join(
+            "{PQA_output_dir}",
+            "tail_trimmed",
+            "{sample}.F.fastq.gz"
+        ),
+        FASTQ_reverse_reads = os.path.join(
+            "{PQA_output_dir}",
+            "tail_trimmed",
+            "{sample}.R.fastq.gz"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_remove_polyA_polyT_tails_pe.{sample}.log"
+        )
+
+    threads: 8
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_polyA_polyT_tails_pe.{sample}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_polyA_polyT_tails_pe.{sample}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_polyA_polyT_tails_pe.{sample}.benchmark.log"
+        )
+
+    conda:
+        "env/cutadapt.yml"
+
+    singularity:
+        "docker://zavolab/cutadapt:1.16"
+
+    shell:
+        """
+        cutadapt \
+        -b AAAAAAAAAAAAAAAAAAAA \
+        -b TTTTTTTTTTTTTTTTTTTT \
+        -B AAAAAAAAAAAAAAAAAAAA \
+        -B TTTTTTTTTTTTTTTTTTTT \
+        -e 0.1 \
+        -O 1 \
+        --pair-filter=any \
+        --times 1 \
+        --trim-n \
+        --cores={threads} \
+        --minimum-length 10 \
+        -o {output.FASTQ_forward_reads} \
+        -p {output.FASTQ_reverse_reads} \
+        {input.FASTQ_forward_reads} \
+        {input.FASTQ_reverse_reads} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Remove polyA & polyT tails from single-end reads
+##############################################################################
+
+rule PQA_remove_polyA_polyT_tails_se:
+    """
+    Running Cutadapt with polyA / polyT sequences
+    for a given single-end RNA-Seq sample.
+    """
+    input:
+        FASTQ_reads = os.path.join(
+            "{PQA_output_dir}",
+            "adapter_trimmed",
+            "{sample}._.fastq.gz"
+        )
+
+    output:
+        FASTQ_reads = os.path.join(
+            "{PQA_output_dir}",
+            "tail_trimmed",
+            "{sample}._.fastq.gz"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_remove_polyA_polyT_tails_se.{sample}.log"
+        )
+
+    threads: 8
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_polyA_polyT_tails_se.{sample}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_polyA_polyT_tails_se.{sample}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_remove_polyA_polyT_tails_se.{sample}.benchmark.log"
+        )
+
+    conda:
+        "env/cutadapt.yml"
+
+    singularity:
+        "docker://zavolab/cutadapt:1.16"
+
+    shell:
+        """
+        cutadapt \
+        -b AAAAAAAAAAAAAAAAAAAA \
+        -b TTTTTTTTTTTTTTTTTTTT \
+        -e 0.1 \
+        -O 1 \
+        --times 1 \
+        --trim-n \
+        --cores={threads} \
+        --minimum-length 10 \
+        -o {output.FASTQ_reads} \
+        {input.FASTQ_reads} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Align RNA-Seq reads
+##############################################################################
+
+rule PQA_align_reads:
+    """
+    Aligning RNA-Seq reads to genome & transcriptome with STAR.
+    """
+    input:
+        FASTQ_sample_files = get_trimmed_fastq_paths,
+        GTF_genomic_annotation = config["PQA_genomic_annotation"],
+        DIR_genome_index = config["PQA_index"]
+
+    output:
+        BAM_genomic_alignments = os.path.join(
+            "{PQA_output_dir}",
+            "alignments",
+            "{sample}",
+            "{sample}.Aligned.out.bam"
+        ),
+        BAM_transcriptome_alignments = os.path.join(
+            "{PQA_output_dir}",
+            "alignments",
+            "{sample}",
+            "{sample}.Aligned.toTranscriptome.out.bam"
+        )
+
+    params:
+        STRING_storage_efficient_flag = str(config["PQA_storage_efficient"]),
+        STRING_outfile_prefix = os.path.join(
+            "{PQA_output_dir}",
+            "alignments",
+            "{sample}",
+            "{sample}."
+        ),
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_align_reads.{sample}.log"
+        )
+
+    threads: 8
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_align_reads.{sample}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_align_reads.{sample}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_align_reads.{sample}.benchmark.log"
+        )
+
+    conda:
+        "env/STAR.yml"
+
+    singularity:
+        "docker://zavolab/star:2.7.1a"
+
+    shell:
+        """
+        if [ "{params.STRING_storage_efficient_flag}" = "True" ]; then
+            STAR \
+            --runMode alignReads \
+            --twopassMode Basic \
+            --outSAMunmapped None  \
+            --outSAMattributes All \
+            --outReadsUnmapped None \
+            --outFilterType BySJout \
+            --alignEndsType Local \
+            --outFilterMismatchNoverLmax 0.1 \
+            --outFilterScoreMinOverLread 0.66 \
+            --outFilterMatchNminOverLread 0.66 \
+            --outFilterMultimapNmax 10 \
+            --outFilterMultimapScoreRange 0 \
+            --runThreadN {threads} \
+            --genomeDir {input.DIR_genome_index} \
+            --sjdbGTFfile {input.GTF_genomic_annotation} \
+            --readFilesIn {input.FASTQ_sample_files} \
+            --readFilesCommand zcat \
+            --outFileNamePrefix {params.STRING_outfile_prefix} \
+            --outSAMtype BAM Unsorted \
+            --quantMode TranscriptomeSAM \
+            1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        else
+            (declare -a decompressed
+            for filegz in {input.FASTQ_sample_files}
+            do
+                file=${{filegz/".gz"/""}}
+                gunzip -f -c $filegz > $file
+                decompressed+=($file)
+            done
+            STAR \
+            --runMode alignReads \
+            --twopassMode Basic \
+            --outSAMunmapped None  \
+            --outSAMattributes All \
+            --outReadsUnmapped None \
+            --outFilterType BySJout \
+            --alignEndsType Local \
+            --outFilterMismatchNoverLmax 0.1 \
+            --outFilterScoreMinOverLread 0.66 \
+            --outFilterMatchNminOverLread 0.66 \
+            --outFilterMultimapNmax 10 \
+            --outFilterMultimapScoreRange 0 \
+            --runThreadN {threads} \
+            --genomeDir {input.DIR_genome_index} \
+            --sjdbGTFfile {input.GTF_genomic_annotation} \
+            --readFilesIn ${{decompressed[@]}} \
+            --outFileNamePrefix {params.STRING_outfile_prefix} \
+            --outSAMtype BAM Unsorted \
+            --quantMode TranscriptomeSAM
+            for file in "${{decompressed[@]}}"
+            do
+                rm -f $file
+            done) \
+            1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        fi
+        """
+
+##############################################################################
+### Sort alignment files
+##############################################################################
+
+rule PQA_sort_aligned_reads:
+    """
+    Sorting genome-aligned RNA-Seq reads with samtools.
+    """
+    input:
+        BAM_genomic_alignments = os.path.join(
+            "{PQA_output_dir}",
+            "alignments",
+            "{sample}",
+            "{sample}.Aligned.out.bam"
+        )
+
+    output:
+        BAM_sorted_genomic_alignments = os.path.join(
+            "{PQA_output_dir}",
+            "alignments",
+            "{sample}",
+            "{sample}.Aligned.out.sorted.bam"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_sort_aligned_reads.{sample}.log"
+        )
+
+    threads: 8
+
+    log:
+        # standard output stream is used by the tool
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_sort_aligned_reads.{sample}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_sort_aligned_reads.{sample}.benchmark.log"
+        )
+
+    conda:
+        "env/samtools.yml"
+
+    singularity:
+        "docker://zavolab/samtools:1.10"
+
+    shell:
+        """
+        samtools sort \
+        -@ {threads} \
+        {input.BAM_genomic_alignments} \
+        1> {output.BAM_sorted_genomic_alignments} \
+        2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Index sorted alignment files
+##############################################################################
+
+rule PQA_index_sorted_aligned_reads:
+    """
+    Indexing sorted genome-aligned RNA-Seq reads with samtools.
+    """
+    input:
+        BAM_sorted_genomic_alignments = os.path.join(
+            "{PQA_output_dir}",
+            "alignments",
+            "{sample}",
+            "{sample}.Aligned.out.sorted.bam"
+        )
+
+    output:
+        BAI_indexed_sorted_genomic_alignments = os.path.join(
+            "{PQA_output_dir}",
+            "alignments",
+            "{sample}",
+            "{sample}.Aligned.out.sorted.bam.bai"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_index_sorted_aligned_reads.{sample}.log"
+        )
+
+    threads: 8
+
+    log:
+        # standard output stream is used by the tool
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_index_sorted_aligned_reads.{sample}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_index_sorted_aligned_reads.{sample}.benchmark.log"
+        )
+
+    conda:
+        "env/samtools.yml"
+
+    singularity:
+        "docker://zavolab/samtools:1.10"
+
+    shell:
+        """
+        samtools index \
+        -@ {threads} \
+        {input.BAM_sorted_genomic_alignments} \
+        1> {output.BAI_indexed_sorted_genomic_alignments} \
+        2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Collapse genomic annotation
+##############################################################################
+
+rule PQA_collapse_genomic_annotation:
+    """
+    Collapsing genomic annotation for RNA-SeQC analysis.
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{PQA_output_dir}",
+            "PQA_outdir"
+        ),
+        SCRIPT_ = os.path.join(
+            config["PQA_scripts_dir"],
+            "collapse_annotation.py"
+        ),
+        GTF_genomic_annotation = config["PQA_genomic_annotation"]
+
+    output:
+        GTF_collapsed_annotation = os.path.join(
+            "{PQA_output_dir}",
+            "collapsed_annotation.gtf"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_collapse_genomic_annotation.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_collapse_genomic_annotation.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_collapse_genomic_annotation.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_collapse_genomic_annotation.benchmark.log"
+        )
+
+    conda:
+        "env/rnaseqc.yml"
+
+    singularity:
+        "docker://zavolab/rnaseqc:2.3.5"
+
+    shell:
+        """
+        python \
+        {input.SCRIPT_} \
+        {input.GTF_genomic_annotation} \
+        {output.GTF_collapsed_annotation} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Run mapping quality analysis
+##############################################################################
+
+rule PQA_mapping_quality_analysis:
+    """
+    Analyzing mapping quality with RNA-SeQC.
+    """
+    input:
+        GTF_collapsed_annotation = os.path.join(
+            "{PQA_output_dir}",
+            "collapsed_annotation.gtf"
+        ),
+        BAM_sorted_genomic_alignments = os.path.join(
+            "{PQA_output_dir}",
+            "alignments",
+            "{sample}",
+            "{sample}.Aligned.out.sorted.bam"
+        ),
+        TSV_design_file = config["PQA_design_file"]
+
+    output:
+        DIR_RNASeQC_analysis = directory(
+                os.path.join(
+                "{PQA_output_dir}",
+                "RNASeQC",
+                "{sample}"
+            )
+        )
+
+    params:
+        STRING_unpaired_flag = lambda wildcards: \
+            get_rnaseqc_unpaired_flag(wildcards),
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_mapping_quality_analysis.{sample}.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_mapping_quality_analysis.{sample}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_mapping_quality_analysis.{sample}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_mapping_quality_analysis.{sample}.benchmark.log"
+        )
+
+    conda:
+        "env/rnaseqc.yml"
+
+    singularity:
+        "docker://zavolab/rnaseqc:2.3.5"
+
+    shell:
+        """
+        rnaseqc \
+        {params.STRING_unpaired_flag} \
+        {input.GTF_collapsed_annotation} \
+        {input.BAM_sorted_genomic_alignments} \
+        {output.DIR_RNASeQC_analysis} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+rule PQA_merge_mapping_quality_tables:
+    """
+    Merging RNA-SeQC results into a single table.
+    """
+    input:
+        DIR_RNASeQC_analysis = expand(
+            os.path.join(
+                "{PQA_output_dir}",
+                "RNASeQC",
+                "{sample}"
+            ),
+            PQA_output_dir = config["PQA_outdir"],
+            sample = get_all_samples_IDs()
+        )
+
+    output:
+        TSV_mapping_quality_table = os.path.join(
+            "{PQA_output_dir}",
+            "mapping_quality_scores.tsv"
+        )
+
+    params:
+        STRING_RNASeQC_suffix = ".Aligned.out.sorted.bam.metrics.tsv",
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_merge_mapping_quality_tables.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_merge_mapping_quality_tables.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_merge_mapping_quality_tables.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_merge_mapping_quality_tables.benchmark.log"
+        )
+
+    run:
+        with open(log.LOG_local_stderr, "w") as logfile:
+            try:
+                df_list = []
+                for report_dir in input.DIR_RNASeQC_analysis:
+                    # read the sample's results table
+                    sample = report_dir.split("/")[-1]
+                    table_path = os.path.join(
+                        report_dir,
+                        sample + params.STRING_RNASeQC_suffix
+                    )
+                    temp = pd.read_csv(table_path, sep="\t", index_col=0, \
+                        na_values=['nan'], keep_default_na=False)
+                    temp.columns = [sample]
+                    df_list.append(temp)
+                # merge tables and save the merged output
+                merged = pd.concat(df_list, axis=1)
+                merged.to_csv(output.TSV_mapping_quality_table, sep="\t")
+            except Exception:
+                traceback.print_exc(file = logfile)
+                raise Exception(
+                    "Workflow error at rule: PQA_merge_mapping_quality_tables"
+                )
+
+##############################################################################
+### Extract transcripts
+##############################################################################
+
+rule PQA_extract_transcripts_as_bed12:
+    """
+    Extracting transcripts to BED12 format.
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{PQA_output_dir}",
+            "PQA_outdir"
+        ),
+        GTF_genomic_annotation = config["PQA_genomic_annotation"],
+        SCRIPT_ = os.path.join(
+            config["PQA_scripts_dir"],
+            "gtf2bed12"
+        )
+
+    output:
+        BED12_transcripts = os.path.join(
+            "{PQA_output_dir}",
+            "full_transcripts_protein_coding.bed"
+        )
+
+    params:
+        STRING_transcript_type = config["PQA_transcript_biotypes"],
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_extract_transcripts_as_bed12.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_extract_transcripts_as_bed12.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_extract_transcripts_as_bed12.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_extract_transcripts_as_bed12.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python -B {input.SCRIPT_} \
+        --gtf {input.GTF_genomic_annotation} \
+        --transcript_type {params.STRING_transcript_type} \
+        --bed12 {output.BED12_transcripts} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Assess coverage bias
+##############################################################################
+
+rule PQA_calculate_TIN_scores:
+    """
+    Calculating transcript integrity (TIN) score in every RNA-Seq sample.
+    """
+    input:
+        BAM_sorted_genomic_alignments = os.path.join(
+            "{PQA_output_dir}",
+            "alignments",
+            "{sample}",
+            "{sample}.Aligned.out.sorted.bam"
+        ),
+        BAI_indexed_sorted_genomic_alignments = os.path.join(
+            "{PQA_output_dir}",
+            "alignments",
+            "{sample}",
+            "{sample}.Aligned.out.sorted.bam.bai"
+        ),
+        BED12_transcripts = os.path.join(
+            "{PQA_output_dir}",
+            "full_transcripts_protein_coding.bed"
+        ),
+        SCRIPT_ = os.path.join(
+            config["PQA_scripts_dir"],
+            "tin-score-calculation.py"
+        )
+
+    output:
+        TSV_TIN_scores = os.path.join(
+            "{PQA_output_dir}",
+            "TIN",
+            "{sample}.tsv"
+        )
+
+    params:
+        STRING_sample = "{sample}",
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_calculate_TIN_scores.{sample}.log"
+        )
+
+    threads: 8
+
+    log:
+        # standard output stream is used by the tool
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_calculate_TIN_scores.{sample}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_calculate_TIN_scores.{sample}.benchmark.log"
+        )
+
+    conda:
+        "env/tin.yml"
+
+    singularity:
+        "docker://quay.io/biocontainers/tin-score-calculation:0.5--pyh5e36f6f_0"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        -i {input.BAM_sorted_genomic_alignments} \
+        -r {input.BED12_transcripts} \
+        -c 0 \
+        --names {params.STRING_sample} \
+        -n 100 \
+        -p {threads} \
+        1> {output.TSV_TIN_scores} \
+        2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Merge TIN score tables
+##############################################################################
+
+rule PQA_merge_TIN_scores:
+    """
+    Merging TIN scores tables for all samples.
+    """
+    input:
+        TSV_TIN_scores = expand(
+            os.path.join(
+                "{PQA_output_dir}",
+                "TIN",
+                "{sample}.tsv"
+            ),
+            PQA_output_dir = config["PQA_outdir"],
+            sample = get_all_samples_IDs()
+        ),
+        SCRIPT_ = os.path.join(
+            config["PQA_scripts_dir"],
+            "tin-score-merge.py"
+        )
+
+    output:
+        TSV_TIN_scores_merged = os.path.join(
+            "{PQA_output_dir}",
+            "TIN_scores.tsv"
+        )
+
+    params:
+        TSV_TIN_scores = " ".join(expand(
+            os.path.join(
+                "{PQA_output_dir}",
+                "TIN",
+                "{sample}.tsv"
+            ),
+            PQA_output_dir = config["PQA_outdir"],
+            sample = get_all_samples_IDs()
+        )),
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_merge_TIN_scores.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_merge_TIN_scores.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_merge_TIN_scores.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_merge_TIN_scores.benchmark.log"
+        )
+
+    conda:
+        "env/tin.yml"
+
+    singularity:
+        "docker://quay.io/biocontainers/tin-score-calculation:0.5--pyh5e36f6f_0"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --input-files {params.TSV_TIN_scores} \
+        --output-file {output.TSV_TIN_scores_merged} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Calculate median TIN scores
+##############################################################################
+
+rule PQA_calculate_median_TIN_score:
+    """
+    Calculating the median TIN score for all samples.
+    """
+    input:
+        TSV_TIN_scores_merged = os.path.join(
+            "{PQA_output_dir}",
+            "TIN_scores.tsv"
+        )
+
+    output:
+        TSV_median_TIN = os.path.join(
+            "{PQA_output_dir}",
+            "median_TIN_scores.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_calculate_median_TIN_score.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_calculate_median_TIN_score.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_calculate_median_TIN_score.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_calculate_median_TIN_score.benchmark.log"
+        )
+
+    run:
+        with open(log.LOG_local_stderr, "w") as logfile:
+            try:
+                df = pd.read_csv(input.TSV_TIN_scores_merged, sep="\t", index_col=0)
+                with open(output.TSV_median_TIN, "w") as f:
+                    for col in df.columns.values:
+                        sortedTIN = sorted(df[col])
+                        index = (len(sortedTIN) - 1) // 2
+                        if (len(sortedTIN) % 2):
+                            median = sortedTIN[index]
+                        else:
+                            median = (sortedTIN[index] + sortedTIN[index + 1]) / 2
+                        f.write(col + "\t" + str(median) + os.linesep)
+            except Exception:
+                traceback.print_exc(file = logfile)
+                raise Exception(
+                    "Workflow error at rule: PQA_calculate_median_TIN_score"
+                )
+
+##############################################################################
+### Filter design table
+##############################################################################
+
+rule PQA_filter_design_table:
+    """
+    Filtering samples out based on their quality.
+    """
+    input:
+        TSV_mapping_quality_table = os.path.join(
+            "{PQA_output_dir}",
+            "mapping_quality_scores.tsv"
+        ),
+        TSV_median_TIN = os.path.join(
+            "{PQA_output_dir}",
+            "median_TIN_scores.tsv"
+        ),
+        TSV_design_file = config["PQA_design_file"],
+        HTML_fastqc_report = expand(
+            os.path.join(
+                "{PQA_output_dir}",
+                "fastqc",
+                "{fq_file}",
+                "{fq_file}_fastqc.html"
+            ),
+            PQA_output_dir = config["PQA_outdir"],
+            fq_file = get_all_fastq_files()
+        ),
+        SCRIPT_ = os.path.join(
+            config["PQA_scripts_dir"],
+            "filter-design-table.py"
+        )
+
+    output:
+        TSV_new_design_table = os.path.join(
+            "{PQA_output_dir}",
+            "design_table_quality_filtered.tsv"
+        )
+
+    params:
+        FLOAT_min_median_TIN_score = \
+            config["PQA_min_median_TIN_score"],
+        FLOAT_RNASeQC_min_mapping_rate = \
+            config["PQA_RNASeQC_min_mapping_rate"],
+        FLOAT_RNASeQC_min_unique_rate_of_mapped = \
+            config["PQA_RNASeQC_min_unique_rate_of_mapped"],
+        FLOAT_RNASeQC_min_high_quality_rate = \
+            config["PQA_RNASeQC_min_high_quality_rate"],
+        FLOAT_RNASeQC_max_intergenic_rate = \
+            config["PQA_RNASeQC_max_intergenic_rate"],
+        FLOAT_RNASeQC_max_rRNA_rate = \
+            config["PQA_RNASeQC_max_rRNA_rate"],
+        LOG_cluster_log = os.path.join(
+            "{PQA_output_dir}",
+            "cluster_log",
+            "PQA_filter_design_table.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_filter_design_table.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_filter_design_table.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PQA_output_dir}",
+            "local_log",
+            "PQA_filter_design_table.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --mapping-quality-scores {input.TSV_mapping_quality_table} \
+        --TIN-scores {input.TSV_median_TIN} \
+        --design-table-in {input.TSV_design_file} \
+        --design-table-out {output.TSV_new_design_table} \
+        --min-median-TIN-cutoff {params.FLOAT_min_median_TIN_score} \
+        --min-mapping-rate {params.FLOAT_RNASeQC_min_mapping_rate} \
+        --min-unique-rate-of-mapped {params.FLOAT_RNASeQC_min_unique_rate_of_mapped} \
+        --min-high-quality-rate {params.FLOAT_RNASeQC_min_high_quality_rate} \
+        --max-intergenic-rate {params.FLOAT_RNASeQC_max_intergenic_rate} \
+        --max-rRNA-rate {params.FLOAT_RNASeQC_max_rRNA_rate} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """

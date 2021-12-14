@@ -1,0 +1,473 @@
+{
+
+    "__default__":
+    {
+        "time": "00:01:00",
+        "cpus-per-task": "1",
+        "mem": "1G",
+        "output": "{params.LOG_cluster_log}-%j-%N.log"
+    },
+
+    "PQA_create_genome_index":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "50G"
+    },
+
+    "PQA_prepare_adapters_textfiles":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "PQA_run_FastQC":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_remove_adapters_pe":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_remove_adapters_se":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_remove_polyA_polyT_tails_pe":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_remove_polyA_polyT_tails_se":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_align_reads":
+    {
+        "time": "06:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "100G"
+    },
+
+    "PQA_sort_aligned_reads":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_index_aligned_reads":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_collapse_genomic_annotation":
+    {
+        "time": "00:10:00",
+        "cpus-per-task": "{threads}",
+        "mem": "10G"
+    },
+
+    "PQA_mapping_quality_analysis":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_merge_mapping_quality_tables":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "PQA_extract_transcripts_as_bed12":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "10G"
+    },
+
+    "PQA_calculate_TIN_scores":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PQA_merge_TIN_scores":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "PQA_calculate_median_TIN_score":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "PQA_filter_design_table":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "ASE_build_genome_index":
+    {
+        "time": "00:30:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "ASE_generate_skipped_exon_events":
+    {
+        "time": "00:10:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "ASE_filter_events":
+    {
+        "time": "00:30:00",
+        "cpus-per-task": "{threads}",
+        "mem": "10G"
+    },
+
+    "ASE_cluster_events":
+    {
+        "time": "04:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "ASE_select_representative_events":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "ASE_format_events_into_bed":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "ASE_extract_splice_sites_coordinates":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "TPA_select_tandem_pas":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "TPA_select_terminal_exon_pas":
+    {
+        "time": "00:10:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "TPA_filter_on_ambiguous_annotation":
+    {
+        "time": "04:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "TPA_extract_representative_sites_coord":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "QEI_extract_transcriptome":
+    {
+        "time": "00:10:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "QEI_quantify_expression":
+    {
+        "time": "02:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "10G"
+    },
+
+    "QEI_merge_expression_values":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "QEI_filter_expression_tables":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "QEI_calculate_exon_inclusion_scores":
+    {
+        "time": "00:30:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "PAQ_create_coverages":
+    {
+        "time": "04:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PAQ_infer_relative_usage":
+    {
+        "time": "04:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "PAQ_relative_pas_positions":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "PAQ_normalize_expression":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "CSM_extract_window_coord_and_sequence":
+    {
+        "time": "00:30:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "CSM_create_kmer_sitecount_matrices":
+    {
+        "time": "01:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "CSM_prepare_MotEvo_parameters":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "CSM_prepare_sequences_for_MotEvo":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "CSM_MotEvo_analysis":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "CSM_create_MotEvo_sitecount_matrices":
+    {
+        "time": "00:30:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "CSM_create_links_to_matrices":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "MAE_prepare_inclusion_table":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "MAE_fit_model_parameters":
+    {
+        "time": "06:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "MAE_calculate_Zscores":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "MAE_extend_result_tables":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "MAE_calculate_Zscores_statistical_significancy":
+    {
+        "time": "00:30:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "MAE_collapse_results_for_region":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "KPC_create_polyA_site_to_exon_mapping":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "KPC_tag_overlapping_polyA_sites":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "KPC_select_pas_expression_columns":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "KPC_run_KAPAC_model":
+    {
+        "time": "06:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "50G"
+    },
+
+    "KPC_extend_result_tables":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "1G"
+    },
+
+    "KPC_calculate_Zscores_statistical_significancy":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "KPC_collapse_results":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "RES_annotate_statistical_significance":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "RES_select_motifs":
+    {
+        "time": "00:05:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "RES_prepare_Zscores_tables":
+    {
+        "time": "00:30:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "RES_plot_Zscores_heatmaps":
+    {
+        "time": "04:00:00",
+        "cpus-per-task": "{threads}",
+        "mem": "20G"
+    },
+
+    "MAPP_collect_summary":
+    {
+        "time": "00:10:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "MAPP_prepare_summary_table":
+    {
+        "time": "00:10:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "MAPP_generate_report":
+    {
+        "time": "00:10:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    },
+
+    "MAPP_summary_tarball":
+    {
+        "time": "00:10:00",
+        "cpus-per-task": "{threads}",
+        "mem": "5G"
+    }
+
+}

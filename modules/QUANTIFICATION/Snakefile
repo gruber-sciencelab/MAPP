@@ -1,0 +1,446 @@
+##############################################################################
+#
+#   Snakemake pipeline:
+#   Quantify gene and transcript expression with salmon.
+#   Quantify inclusion score for alternatively spliced exons.
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 02-04-2020
+#   LICENSE: Apache_2.0
+#
+##############################################################################
+
+# imports
+import sys
+import os
+import traceback
+import pandas as pd
+
+# local rules
+localrules: QEI_all, QEI_create_outdir
+
+##############################################################################
+### Target rule with final output of the pipeline
+##############################################################################
+
+rule QEI_all:
+    """
+    Gathering all output
+    """
+    input:
+        TSV_inclusion_table = expand(
+            os.path.join(
+                "{QEI_output_dir}",
+                "inclusion_table.tsv"
+            ),
+            QEI_output_dir=config["QEI_outdir"]
+        )
+
+##############################################################################
+### Create directories for the results
+##############################################################################
+
+rule QEI_create_outdir:
+    """
+    Preparing directories for the results
+    """
+    output:
+        TEMP_ = temp(
+            os.path.join(
+                "{QEI_output_dir}",
+                "QEI_outdir"
+            )
+        )
+
+    params:
+        DIR_output_dir = "{QEI_output_dir}",
+        LOG_cluster_log = os.path.join(
+            "{QEI_output_dir}",
+            "cluster_log"
+        ),
+        LOG_local_log = os.path.join(
+            "{QEI_output_dir}",
+            "local_log"
+        )
+
+    threads: 1
+
+    conda:
+        "env/bash.yml"
+
+    singularity:
+        "docker://bash:4.4.18"
+
+    shell:
+        """
+        mkdir -p {params.DIR_output_dir}; \
+        mkdir -p {params.LOG_cluster_log}; \
+        mkdir -p {params.LOG_local_log}; \
+        touch {output.TEMP_}
+        """
+
+##############################################################################
+### Extract transcriptome
+##############################################################################
+
+rule QEI_extract_transcriptome:
+    """
+    Generating transcriptome from FASTA genome and GTF annotation by cufflinks
+    """
+    input:
+        TEMP_ = os.path.join(
+            "{QEI_output_dir}",
+            "QEI_outdir"
+        ),
+        GTF_annotation = config["QEI_genomic_annotation"],
+        FASTA_genome = config["QEI_genomic_sequence"]
+
+    output:
+        FASTA_transcriptome = os.path.join(
+            "{QEI_output_dir}",
+            "transcriptome.fasta"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{QEI_output_dir}",
+            "cluster_log",
+            "QEI_extract_transcriptome.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_extract_transcriptome.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_extract_transcriptome.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_extract_transcriptome.benchmark.log"
+        )
+
+    conda:
+        "env/cufflinks.yml"
+
+    singularity:
+        "docker://zavolab/cufflinks:2.2.1"
+
+    shell:
+        """
+        gffread {input.GTF_annotation} \
+        -g {input.FASTA_genome} \
+        -w {output.FASTA_transcriptome} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Quantify genes and transcripts expression
+##############################################################################
+
+rule QEI_quantify_expression:
+    """
+    Quantify expression of genes and transcripts with salmon
+    """
+    input:
+        FASTA_transcriptome = os.path.join(
+            "{QEI_output_dir}",
+            "transcriptome.fasta"
+        ),
+        GTF_annotation = config["QEI_genomic_annotation"],
+        BAM_alignment = lambda wildcards:
+            config["QEI_alignment_files"][wildcards.sample_ID]
+
+    output:
+        DIR_sample_quantification_results = directory(
+            os.path.join(
+                "{QEI_output_dir}",
+                "salmon_quantification",
+                "{sample_ID}",
+            )
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{QEI_output_dir}",
+            "cluster_log",
+            "QEI_quantify_expression.{sample_ID}.log"
+        )
+
+    threads: 8
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_quantify_expression.{sample_ID}.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_quantify_expression.{sample_ID}.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_quantify_expression.{sample_ID}.benchmark.log"
+        )
+
+    conda:
+        "env/salmon.yml"
+
+    singularity:
+        "docker://combinelab/salmon:0.14.1"
+
+    shell:
+        """
+        salmon quant \
+        -t {input.FASTA_transcriptome} \
+        -l A \
+        -p {threads} \
+        -a {input.BAM_alignment} \
+        -o {output.DIR_sample_quantification_results} \
+        -g {input.GTF_annotation} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+### Merge expression values of all samples
+##############################################################################
+
+rule QEI_merge_expression_values:
+    """
+    Merging TPM scores after salmon quantification of genes and transcripts
+    """
+    input:
+        DIR_sample_quantification_results = expand(
+            os.path.join(
+                "{QEI_output_dir}",
+                "salmon_quantification",
+                "{sample_ID}"
+            ),
+            QEI_output_dir = config["QEI_outdir"],
+            sample_ID = config["QEI_alignment_files"].keys()
+        ),
+        SCRIPT_ = os.path.join(
+            config["QEI_scripts_dir"],
+            "merge-quantification-results.py"
+        )
+
+    output:
+        TSV_merged_quantification_genes = os.path.join(
+            "{QEI_output_dir}",
+            "merged_quantification_genes.tsv"
+        ),
+        TSV_merged_quantification_transcripts = os.path.join(
+            "{QEI_output_dir}",
+            "merged_quantification_transcripts.tsv"
+        )
+
+    params:
+        STR_salmon_file_name_genes_quantification = "quant.genes.sf",
+        STR_salmon_file_name_transcripts_quantification = "quant.sf",
+        LOG_cluster_log = os.path.join(
+            "{QEI_output_dir}",
+            "cluster_log",
+            "QEI_merge_expression_values.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_merge_expression_values.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_merge_expression_values.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_merge_expression_values.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --quantification-result-directories {input.DIR_sample_quantification_results} \
+        --quantification-genes-filenames {params.STR_salmon_file_name_genes_quantification} \
+        --quantification-transcripts-filenames {params.STR_salmon_file_name_transcripts_quantification} \
+        --quantification-merged-genes {output.TSV_merged_quantification_genes} \
+        --quantification-merged-transcripts {output.TSV_merged_quantification_transcripts} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+###  Filter expression tables
+##############################################################################
+
+rule QEI_filter_expression_tables:
+    """
+    Subset samples which passed quality filtering
+    (defined in the design table)
+    """
+    input:
+        TSV_merged_quantification_genes = os.path.join(
+            "{QEI_output_dir}",
+            "merged_quantification_genes.tsv"
+        ),
+        TSV_merged_quantification_transcripts = os.path.join(
+            "{QEI_output_dir}",
+            "merged_quantification_transcripts.tsv"
+        ),
+        TSV_design_table = config["QEI_design_table"]
+
+    output:
+        TSV_filtered_merged_quantification_genes = os.path.join(
+            "{QEI_output_dir}",
+            "filtered_merged_quantification_genes.tsv"
+        ),
+        TSV_filtered_merged_quantification_transcripts = os.path.join(
+            "{QEI_output_dir}",
+            "filtered_merged_quantification_transcripts.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{QEI_output_dir}",
+            "cluster_log",
+            "QEI_filter_expression_tables.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_filter_expression_tables.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_filter_expression_tables.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_filter_expression_tables.benchmark.log"
+        )
+
+    run:
+        with open(log.LOG_local_stderr, "w") as logfile:
+            try:
+                # select proper "set" of samples
+                design_table = pd.read_csv(input.TSV_design_table, sep="\t")
+                samples = list(design_table["sample"])
+                # subset gene table:
+                quant = pd.read_csv(input.TSV_merged_quantification_genes, sep="\t", index_col=0)
+                quant = quant[samples]
+                quant.to_csv(output.TSV_filtered_merged_quantification_genes, sep="\t", index_label=False)
+                # subset transcript table:
+                quant = pd.read_csv(input.TSV_merged_quantification_transcripts, sep="\t", index_col=0)
+                quant = quant[samples]
+                quant.to_csv(output.TSV_filtered_merged_quantification_transcripts, sep="\t", index_label=False)
+            except Exception:
+                traceback.print_exc(file = logfile)
+                raise Exception(
+                    "Workflow error at rule: QEI_filter_expression_tables"
+                )
+
+##############################################################################
+### Prepare exon-centric data table
+##############################################################################
+
+rule QEI_calculate_exon_inclusion_scores:
+    """
+    Calculating the total expression of transcript that
+    include/could include a given exon (for all exons)
+    """
+    input:
+        TSV_filtered_merged_quantification_transcripts = os.path.join(
+            "{QEI_output_dir}",
+            "filtered_merged_quantification_transcripts.tsv"
+        ),
+        TSV_selected_SE_events = config["QEI_exon_set"],
+        SCRIPT_ = os.path.join(
+            config["QEI_scripts_dir"],
+            "calculate-exon-inclusion-scores.py"
+        )
+
+    output:
+        TSV_inclusion_table = os.path.join(
+            "{QEI_output_dir}",
+            "inclusion_table.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{QEI_output_dir}",
+            "cluster_log",
+            "QEI_calculate_exon_inclusion_scores.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_calculate_exon_inclusion_scores.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_calculate_exon_inclusion_scores.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{QEI_output_dir}",
+            "local_log",
+            "QEI_calculate_exon_inclusion_scores.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --transcript-quantification {input.TSV_filtered_merged_quantification_transcripts} \
+        --exon-table {input.TSV_selected_SE_events} \
+        --inclusion-table {output.TSV_inclusion_table} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """

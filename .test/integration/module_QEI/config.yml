@@ -1,0 +1,47 @@
+###############################################################################
+#
+#   Config options for the snakemake pipeline
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 11-11-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# path to the directory with all the scripts for this pipeline
+# (relative to the 'execution' directory)
+QEI_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/QUANTIFICATION/scripts"
+
+# path for the output directory
+# (relative to the 'execution' directory)
+QEI_outdir: "/builds/zavolan_group/pipelines/mapp/modules/QUANTIFICATION/output"
+
+# path to the genomic annotation in GTF format
+QEI_genomic_annotation: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
+
+# path to the genomic sequence in fasta format
+# NOTE:
+# unfortunately there is no separate gffread flag for a genomic sequence index;
+# genome FASTA file should be accompanied by FASTA INDEX (.fai) file
+# in the same directory, under the same core name; in case it is not:
+# gffread will create the index on-the-fly and save it alongside the genomic sequence
+# (thus, the user requires write permission to the directory below in such scenario)
+QEI_genomic_sequence: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+
+# per-sample paths to the bam files with transcriptomic alignments
+QEI_alignment_files:
+  "sample_A": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_QEI/sample_A.bam"
+  "sample_B": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_QEI/sample_B.bam"
+
+# TSV-formatted design table with information regarding RNA-Seq samples (quality-filtered set)
+QEI_design_table: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_QEI/design_table.tsv"
+
+# TSV table with alternatively spliced exon
+# (cluster representatives from ASE module)
+QEI_exon_set: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_QEI/events_SE_selected.tsv"
+
+...

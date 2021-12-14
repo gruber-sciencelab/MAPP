@@ -1,0 +1,63 @@
+###############################################################################
+#
+#   Config options for the snakemake pipeline
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 09-04-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# path to the directory with all the scripts for this pipeline
+# (relative to the 'execution' directory)
+CSM_scripts_dir: "../scripts"
+
+# path for the output directory
+# (relative to the 'execution' directory)
+CSM_outdir: "../output"
+
+# path to the genomic sequence in fasta format
+CSM_genomic_sequence: ""
+
+# relative ranges around respective sites
+CSM_regions_ranges:
+  "polyA": "150-150"
+  "3ss": "150-50"
+  "5ss": "50-150"
+
+# paths to the bed-formatted sites
+CSM_regions_files:
+  "polyA": ""
+  "3ss": ""
+  "5ss": ""
+
+# sliding window configuration: window size and slide step
+CSM_window_size: "50"
+CSM_window_step: "25"
+
+# sitecount matrix type: "kmers" or "pwms" options available
+CSM_matrix_type: "pwms"
+
+# options for "kmers" sitecount matrices:
+# inclusive ends specification for the range of k-mers sizes = [kmer_min,kmer_max]
+CSM_kmer_min: "3"
+CSM_kmer_max: "6"
+
+# options for "pwms" sitecount matrices:
+# path to the directory with TRANSFAC-formatted PWM files
+CSM_pwm_directory: ""
+
+# MotEvo parameter: prior probability for the background binding
+CSM_MotEvo_bg_binding_prior: 0.99
+
+# MotEvo parameter: prior minimum binding posterior probability
+CSM_MotEvo_min_binding_posterior: 0.01
+
+# MotEvo parameter: order of the Markov chain
+CSM_MotEvo_Markov_chain_order: 1
+
+...

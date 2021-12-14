@@ -1,0 +1,25 @@
+###############################################################################
+#
+#   Software to be installed in the environment
+#
+#   AUTHOR: Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 23-03-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+name: salmon
+
+channels:
+  - bioconda
+  - conda-forge
+
+dependencies:
+  - tbb=2020.2
+  - salmon=0.14.1
+
+...

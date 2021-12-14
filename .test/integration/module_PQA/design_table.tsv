@@ -1,0 +1,3 @@
+sample	fq1	fq2	condition	adapter1	adapter2	library	color
+sample_A	/builds/zavolan_group/pipelines/mapp/.test/integration/module_PQA/fastq/sample_A_1.fastq.gz	/builds/zavolan_group/pipelines/mapp/.test/integration/module_PQA/fastq/sample_A_2.fastq.gz	untreated	XXX	XXX	stranded	#E9E8E7
+sample_B	/builds/zavolan_group/pipelines/mapp/.test/integration/module_PQA/fastq/sample_B_1.fastq.gz	/builds/zavolan_group/pipelines/mapp/.test/integration/module_PQA/fastq/sample_B_2.fastq.gz	treated	XXX	XXX	stranded	#D4213D

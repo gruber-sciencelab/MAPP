@@ -1,0 +1,13 @@
+snakefile: "../Snakefile"
+local-cores: 1
+cores: 2
+printshellcmds: true
+rerun-incomplete: true
+use-singularity: true
+keep-going: true
+verbose: true
+jobscript: "slurm-jobscript.sh"
+cluster: "slurm-submit.py"
+cluster-status: "slurm-status.py"
+latency-wait: 120
+jobs: 2

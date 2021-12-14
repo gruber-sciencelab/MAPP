@@ -1,0 +1,96 @@
+###############################################################################
+#
+#   Config options for the snakemake pipeline
+#
+#   AUTHORS: Ralf_Schmidt, Maciej_Bak
+#   AFFILIATION: University_of_Basel
+#   AFFILIATION: Swiss_Institute_of_Bioinformatics
+#   CONTACT: maciej.bak@unibas.ch
+#   CREATED: 11-11-2020
+#   LICENSE: Apache_2.0
+#
+###############################################################################
+---
+
+# path to the directory with all the scripts for this pipeline
+# (relative to the 'execution' directory)
+PAQ_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/PAQR/scripts"
+
+# path for the output directory
+# (relative to the 'execution' directory)
+PAQ_outdir: "/builds/zavolan_group/pipelines/mapp/modules/PAQR/output"
+
+# path to the poly(A) site set
+# (sites located on terminal exons with at least two poly(A) sites on the exon
+PAQ_tandem_pas: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/tandem_pas.terminal_exons.clean.bed"
+
+# per-sample paths to the bam files with genomic alignments
+# IMPORTANT:
+# It is required by the python libraries that indices of the alignments are located in the same directory.
+# Example: /sample.bam must be placed alongside /sample.bam.bai 
+PAQ_mapped_samples:
+  "sample_A": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/sample_A.bam"
+  "sample_B": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/sample_B.bam"
+
+# per-sample paths to the bai files with genomic alignments' indices
+PAQ_mapped_samples_indices:
+  "sample_A": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/sample_A.bam.bai"
+  "sample_B": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/sample_B.bam.bai"
+
+# per-sample condition flag:
+PAQ_mapped_samples_conditions:
+  "sample_A": "untreated"
+  "sample_B": "treated"
+
+# TSV-formatted design table with information regarding RNA-Seq samples (quality-filtered set)
+PAQ_design_file: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/design_table.tsv"
+
+# number of nucleotides for which the coverage profile is extended
+# and obtained downstream of each annotated exon end
+PAQ_coverage_downstream_extension: "200"
+
+# minimum distance between the exon start and the most proximal poly(A) site
+# (for exons with distances below the cutoff the upstream extension
+# of the coverage is calculated)
+PAQ_min_distance_start_to_proximal: "250"
+
+# IMPORTANT:
+# denote if the BAM files come from unstranded sequencing
+# By default paired-end sequencing with read1 - reverse orientation,
+# read2 - forward orientation is assumed.
+# Single-stranded data with the reads in sense direction are processed properly too
+# PAQR does not support single-end data in reverse orientation.
+PAQ_coverage_unstranded: "no"
+
+# expected RNA-Seq read length
+# approx. to check distances and coverage in the exon (upstream pas)
+PAQ_read_length: "100"
+
+# minimum length of the region that needs to be available
+# to calculate a mean coverage and the mean squared error
+PAQ_min_length_mean_coverage: "100"
+
+# minimum mean coverage required for an exon to be considered in the analysis
+PAQ_min_mean_exon_coverage: "5"
+
+# length of the region downstream of the exon,
+# necessary to search for zero coverage downstream of the distal site
+PAQ_distal_downstream_extension: "200"
+
+# maximum percentage of the coverage at the exon start
+# which is allowed for the mean coverage in the downstream region
+# of a valid distal site
+PAQ_max_mean_coverage: "10"
+
+# distance until which poly(A) clusters are merged
+PAQ_cluster_distance: "200"
+
+# upstream extension added to the poly(A) cluster's end
+# during the check for global break points 
+PAQ_upstream_cluster_extension: "200"
+
+# upper limit on the ratio of coverage mean squared error values
+# after and before including a new break point 
+PAQ_coverage_mse_ratio_limit: "0.5"
+
+...
