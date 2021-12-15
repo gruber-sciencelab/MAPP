@@ -84,7 +84,7 @@ jobs:
       - name: Create the main configfile
         run: |
           python scripts/create-main-config-file.py \
-          --config-template .test/integration/MAPP/config_template_1.yml \
+          --config-template .test/integration/MAPP/config_template_2.yml \
           --pipeline-configfile configs/config.yml
 
       - name: Create snakemake rulegraph
