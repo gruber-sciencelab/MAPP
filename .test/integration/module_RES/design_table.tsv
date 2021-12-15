@@ -1,3 +1,3 @@
-sample	fq1	fq2	condition	adapter1	adapter2	library	color
-sample_A	/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/fastq/sample_A_1.fastq.gz	/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/fastq/sample_A_2.fastq.gz	untreated	XXX	XXX	stranded	#E9E8E7
-sample_B	/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/fastq/sample_B_1.fastq.gz	/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/fastq/sample_B_2.fastq.gz	treated	XXX	XXX	stranded	#D4213D
+sample	fq1	fq2	condition	adapter1	adapter2	library
+sample_A	/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/fastq/sample_A_1.fastq.gz	/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/fastq/sample_A_2.fastq.gz	untreated	XXX	XXX	stranded
+sample_B	/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/fastq/sample_B_1.fastq.gz	/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/fastq/sample_B_2.fastq.gz	treated	XXX	XXX	stranded
