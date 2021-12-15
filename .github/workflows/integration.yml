@@ -49,7 +49,7 @@ jobs:
 
       - name: Create snakemake DAG
         run: |
-          bash modules/PAQR/execution/run.sh \
+          bash modules/PREPROCESSING/execution/run.sh \
           -c .test/integration/module_PQA/config.yml \
           -e local \
           -t conda \
@@ -58,7 +58,7 @@ jobs:
       - name: Initiate snakemake dry run
         run: |
           snakemake \
-          --snakefile=modules/PAQR/Snakefile \
+          --snakefile=modules/PREPROCESSING/Snakefile \
           --configfile=.test/integration/module_PQA/config.yml \
           --printshellcmds \
           --dryrun \
@@ -67,7 +67,7 @@ jobs:
       - name: Build conda envs for all the rules
         run: |
           snakemake \
-          --snakefile=modules/PAQR/Snakefile \
+          --snakefile=modules/PREPROCESSING/Snakefile \
           --configfile=.test/integration/module_PQA/config.yml \
           --use-conda \
           --conda-create-envs-only \
