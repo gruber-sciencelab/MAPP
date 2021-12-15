@@ -14,14 +14,14 @@
 
 # path to the directory with all the scripts for this pipeline
 # (relative to the 'execution' directory)
-QEI_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/QUANTIFICATION/scripts"
+QEI_scripts_dir: "/home/runner/work/MAPP/MAPP/modules/QUANTIFICATION/scripts"
 
 # path for the output directory
 # (relative to the 'execution' directory)
-QEI_outdir: "/builds/zavolan_group/pipelines/mapp/modules/QUANTIFICATION/output"
+QEI_outdir: "/home/runner/work/MAPP/MAPP/modules/QUANTIFICATION/output"
 
 # path to the genomic annotation in GTF format
-QEI_genomic_annotation: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
+QEI_genomic_annotation: "/home/runner/work/MAPP/MAPP/.test/integration/module_QEI/Homo_sapiens.GRCh38.102.gtf"
 
 # path to the genomic sequence in fasta format
 # NOTE:
@@ -30,18 +30,18 @@ QEI_genomic_annotation: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_
 # in the same directory, under the same core name; in case it is not:
 # gffread will create the index on-the-fly and save it alongside the genomic sequence
 # (thus, the user requires write permission to the directory below in such scenario)
-QEI_genomic_sequence: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+QEI_genomic_sequence: "/home/runner/work/MAPP/MAPP/.test/integration/module_QEI/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 
 # per-sample paths to the bam files with transcriptomic alignments
 QEI_alignment_files:
-  "sample_A": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_QEI/sample_A.bam"
-  "sample_B": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_QEI/sample_B.bam"
+  "sample_A": "/home/runner/work/MAPP/MAPP/.test/integration/module_QEI/sample_A.bam"
+  "sample_B": "/home/runner/work/MAPP/MAPP/.test/integration/module_QEI/sample_B.bam"
 
 # TSV-formatted design table with information regarding RNA-Seq samples (quality-filtered set)
-QEI_design_table: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_QEI/design_table.tsv"
+QEI_design_table: "/home/runner/work/MAPP/MAPP/.test/integration/module_QEI/design_table.tsv"
 
 # TSV table with alternatively spliced exon
 # (cluster representatives from ASE module)
-QEI_exon_set: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_QEI/events_SE_selected.tsv"
+QEI_exon_set: "/home/runner/work/MAPP/MAPP/.test/integration/module_QEI/events_SE_selected.tsv"
 
 ...

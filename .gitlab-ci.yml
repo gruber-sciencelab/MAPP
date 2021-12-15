@@ -1,30 +1,5 @@
 
 
-QEI_module:
-  script:
-    # overwrite w/ the test config:
-    - cp .test/integration/module_QEI/config.yml modules/QUANTIFICATION/configs/config.yml
-    # cd into module exec directory:
-    - cd /builds/zavolan_group/pipelines/mapp/modules/QUANTIFICATION/execution
-    # snakemake DAG run (test script):
-    - bash snakemake_dag_run.sh
-    # snakemake dry run:
-    - >
-      snakemake
-      --snakefile=../Snakefile
-      --configfile=../configs/config.yml
-      --printshellcmds
-      --dryrun
-      --verbose
-    # build conda envs for the rules:
-    - >
-      snakemake
-      --snakefile=../Snakefile
-      --configfile=../configs/config.yml
-      --use-conda
-      --conda-create-envs-only
-      --cores 8
-
 PAQ_module:
   script:
     # overwrite w/ the test config:
