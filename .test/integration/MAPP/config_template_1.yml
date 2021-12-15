@@ -28,10 +28,10 @@ analysis_name: "GitLab CI test run 1"
 ################################################################################
 
 # Pipeline directory
-MAPP_directory: "/builds/zavolan_group/pipelines/mapp"
+MAPP_directory: "/home/runner/work/MAPP/MAPP"
 
 # Path to the genomic annotation in GTF format
-genomic_annotation: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
+genomic_annotation: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
 
 # Path to the genomic sequence in FASTA format
 # NOTE:
@@ -40,25 +40,25 @@ genomic_annotation: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/
 # in the same directory, under the same core name; in case it is not:
 # gffread will create the index on-the-fly and save it alongside the genomic sequence
 # (thus, the user requires write permission to the directory below in such scenario)
-genomic_sequence: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+genomic_sequence: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 
 # Path to the genomic index generated with STAR
 # (if no index is present a new one will be created at the following path)
-genomic_index: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.index"
+genomic_index: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.index"
 
 # Path to the design table with information about RNA-Seq samples
-analysis_design_table: "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/design_table.tsv"
+analysis_design_table: "/home/runner/work/MAPP/MAPP/.test/integration/MAPP/design_table.tsv"
 
 # Path to the directory with Position Weight Matrices
 # (required only for runs in "pwms" mode, otherwise - please provide "")
-PWM_directory: "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/PWM"
+PWM_directory: "/home/runner/work/MAPP/MAPP/.test/integration/MAPP/PWM"
 
 # Path to the directory with PWMs sequence logos
 # (required only for runs in "pwms" mode, otherwise - please provide "")
-seqlogo_directory: "/builds/zavolan_group/pipelines/mapp/.test/integration/MAPP/seqlogos"
+seqlogo_directory: "/home/runner/work/MAPP/MAPP/.test/integration/MAPP/seqlogos"
 
 # Path to the list of PAS coordinates in BED format
-PAS_atlas: "/builds/zavolan_group/pipelines/mapp/ATLAS2_hsa/clean-atlas.bed"
+PAS_atlas: "/home/runner/work/MAPP/MAPP/ATLAS2_hsa/clean-atlas.bed"
 
 # Optional: path to the output directories of CSM module:
 # directories with per-window sitecount matrices (3ss/5ss/pas)
