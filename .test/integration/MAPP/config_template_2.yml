@@ -230,6 +230,9 @@ relUse_us_reg_for_best_breakPoint: 200
 # after and before including a new break point 
 relUse_mse_ratio_threshold: 0.5
 
+# PAQR parameter: TPM pseudocount to be added in the final expression table
+pas_expression_pseudocount: 1
+
 # Minimal expression of all transcripts supporting an
 # alternatively spliced exon (in all samples)
 min_transcript_expression: 1
