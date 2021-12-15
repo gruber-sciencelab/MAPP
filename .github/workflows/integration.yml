@@ -24,7 +24,7 @@ on:
 
 jobs:
 
-  MAPP-test2:
+  PQA-module:
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -47,58 +47,10 @@ jobs:
           conda info -a
           conda list
 
-      - name: Download genomic resources
-        run: |
-          bash scripts/download-ENSEMBL-resources.sh \
-          --species hsa \
-          --output-directory resources_ENSEMBL_hsa
-
-      - name: Download the atlas of PolyA sites
-        run: |
-          bash scripts/download-polyA-atlas.sh \
-          --species hsa \
-          --output-directory ATLAS2_hsa
-
-      - name: Download and parse ATtRACT motifs
-        run: |
-          bash scripts/download-and-parse-ATtRACT-motifs.sh \
-          --output-directory ATtRACT_hsa
-
-      # for this test it is required that we set the
-      # modification date of resources files as older than
-      # the pipeline files (expected situation):
-      - name: Adjust modification date for resources
-        run: |
-          touch -a -m -t 200001010000.00 resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf
-          touch -a -m -t 200001010000.00 resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa
-          touch -a -m -t 200001010000.00 ATLAS2_hsa/reformatted_filtered_atlas.bed
-
-      # according to the notes in the pipeline configuration:
-      # comment-out ASE, TPA and CSM modules inclusion from the main Snakefile:
-      - name: Comment-out ASE, TPA, CSM modules
-        run: |
-          sed '52 {s/^/#/}' -i Snakefile
-          sed '53 {s/^/#/}' -i Snakefile
-          sed '56 {s/^/#/}' -i Snakefile
-
-      - name: Create the main configfile
-        run: |
-          python scripts/create-main-config-file.py \
-          --config-template .test/integration/MAPP/config_template_2.yml \
-          --pipeline-configfile configs/config.yml
-
-      - name: Create snakemake rulegraph
-        run: |
-          bash execution/run.sh \
-          -c configs/config.yml \
-          -e local \
-          -t conda \
-          -g rulegraph rulegraph.svg
-
       - name: Create snakemake DAG
         run: |
           bash execution/run.sh \
-          -c configs/config.yml \
+          -c .test/integration/module_PQA/config.yml \
           -e local \
           -t conda \
           -g dag dag.svg
@@ -111,5 +63,14 @@ jobs:
           --printshellcmds \
           --dryrun \
           --verbose
+
+      - name: Build conda envs for all the rules
+        run: |
+          snakemake \
+          --snakefile=Snakefile \
+          --configfile=configs/config.yml \
+          --use-conda \
+          --conda-create-envs-only \
+          --cores 8
 
 ...

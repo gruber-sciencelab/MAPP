@@ -14,29 +14,29 @@
 
 # path to the directory with all the scripts for this pipeline
 # (relative to the 'execution' directory)
-PQA_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/PREPROCESSING/scripts"
+PQA_scripts_dir: "/home/runner/work/MAPP/MAPP/modules/PREPROCESSING/scripts"
 
 # path for the output directory
 # (relative to the 'execution' directory)
-PQA_outdir: "/builds/zavolan_group/pipelines/mapp/modules/PREPROCESSING/output"
+PQA_outdir: "/home/runner/work/MAPP/MAPP/modules/PREPROCESSING/output"
 
 # path to the text file with known common adapters sequences
 # (relative to the 'execution' directory)
-PQA_adapters_sequences: "/builds/zavolan_group/pipelines/mapp/modules/PREPROCESSING/resources/adapters.txt"
+PQA_adapters_sequences: "/home/runner/work/MAPP/MAPP/modules/PREPROCESSING/resources/adapters.txt"
 
 # path to the genomic sequence in fasta format
-PQA_genomic_sequence: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+PQA_genomic_sequence: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 
 # path to the genomic annotation in GTF format
-PQA_genomic_annotation: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
+PQA_genomic_annotation: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
 
 # TSV-formatted design table with information regarding RNA-Seq samples
-PQA_design_file: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PQA/design_table.tsv"
+PQA_design_file: "/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/design_table.tsv"
 
 # path to (for) the STAR-generated genome index
 # if the index does not exists yet - it will be generated in that directory
 # note: do not put it under the PQA_outdir!
-PQA_index: "/builds/zavolan_group/pipelines/mapp/modules/PREPROCESSING/index"
+PQA_index: "/home/runner/work/MAPP/MAPP/modules/PREPROCESSING/index"
 
 # STAR option during the mapping process: --sjdbOverhang
 # optimally, it should be set to read length - 1
