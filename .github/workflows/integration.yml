@@ -46,11 +46,37 @@ jobs:
         run: |
           conda info -a
           conda list
+          pwd
 
       - name: Create the main configfile
         run: |
           python scripts/create-main-config-file.py \
           --config-template .test/integration/MAPP/config_template_1.yml \
           --pipeline-configfile configs/config.yml
+
+      - name: Create snakemake rulegraph
+        run: |
+          bash execution/run.sh \
+          -c configs/config.yml \
+          -e local \
+          -t conda \
+          -g rulegraph rulegraph.svg
+
+      - name: Create snakemake DAG
+        run: |
+          bash execution/run.sh \
+          -c configs/config.yml \
+          -e local \
+          -t conda \
+          -g dag dag.svg
+
+      - name: Initiate snakemake dry run
+        run: |
+          snakemake \
+          --snakefile=Snakefile \
+          --configfile=configs/config.yml \
+          --printshellcmds \
+          --dryrun \
+          --verbose
 
 ...
