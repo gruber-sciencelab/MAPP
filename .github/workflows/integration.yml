@@ -24,7 +24,7 @@ on:
 
 jobs:
 
-  PAQ-module:
+  MAE-module:
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -49,8 +49,8 @@ jobs:
 
       - name: Create snakemake DAG
         run: |
-          bash modules/PAQR/execution/run.sh \
-          -c .test/integration/module_PAQ/config.yml \
+          bash modules/MAEI/execution/run.sh \
+          -c .test/integration/module_MAE/config.yml \
           -e local \
           -t conda \
           -g dag dag.svg
@@ -58,8 +58,8 @@ jobs:
       - name: Initiate snakemake dry run
         run: |
           snakemake \
-          --snakefile=modules/PAQR/Snakefile \
-          --configfile=.test/integration/module_PAQ/config.yml \
+          --snakefile=modules/MAEI/Snakefile \
+          --configfile=.test/integration/module_MAE/config.yml \
           --printshellcmds \
           --dryrun \
           --verbose
@@ -67,85 +67,8 @@ jobs:
       - name: Build conda envs for all the rules
         run: |
           snakemake \
-          --snakefile=modules/PAQR/Snakefile \
-          --configfile=.test/integration/module_PAQ/config.yml \
-          --use-conda \
-          --conda-create-envs-only \
-          --cores 8
-
-  CSM-module:
-    runs-on: ubuntu-20.04
-    defaults:
-      run:
-        shell: bash -l {0}
-    steps:
-
-      - name: Checkout mapp repository
-        uses: actions/checkout@v2
-
-      - name: Setup miniconda & mapp main environment
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-update-conda: false
-          environment-file: env/environment.yml
-          activate-environment: mapp
-          auto-activate-base: false
-
-      - name: Display all miniconda & env info
-        run: |
-          conda info -a
-          conda list
-
-      # Test 1: kmers
-      - name: Create snakemake DAG
-        run: |
-          bash modules/CREATE_SITECOUNT_MATRICES/execution/run.sh \
-          -c .test/integration/module_CSM/config1_kmers.yml \
-          -e local \
-          -t conda \
-          -g dag dag.svg
-      #
-      - name: Initiate snakemake dry run
-        run: |
-          snakemake \
-          --snakefile=modules/CREATE_SITECOUNT_MATRICES/Snakefile \
-          --configfile=.test/integration/module_CSM/config1_kmers.yml \
-          --printshellcmds \
-          --dryrun \
-          --verbose
-      #
-      - name: Build conda envs for all the rules
-        run: |
-          snakemake \
-          --snakefile=modules/CREATE_SITECOUNT_MATRICES/Snakefile \
-          --configfile=.test/integration/module_CSM/config1_kmers.yml \
-          --use-conda \
-          --conda-create-envs-only \
-          --cores 8
-
-      # Test 2: pwms
-      - name: Create snakemake DAG
-        run: |
-          bash modules/CREATE_SITECOUNT_MATRICES/execution/run.sh \
-          -c .test/integration/module_CSM/config2_kmers.yml \
-          -e local \
-          -t conda \
-          -g dag dag.svg
-      #
-      - name: Initiate snakemake dry run
-        run: |
-          snakemake \
-          --snakefile=modules/CREATE_SITECOUNT_MATRICES/Snakefile \
-          --configfile=.test/integration/module_CSM/config2_kmers.yml \
-          --printshellcmds \
-          --dryrun \
-          --verbose
-      #
-      - name: Build conda envs for all the rules
-        run: |
-          snakemake \
-          --snakefile=modules/CREATE_SITECOUNT_MATRICES/Snakefile \
-          --configfile=.test/integration/module_CSM/config2_kmers.yml \
+          --snakefile=modules/MAEI/Snakefile \
+          --configfile=.test/integration/module_MAE/config.yml \
           --use-conda \
           --conda-create-envs-only \
           --cores 8

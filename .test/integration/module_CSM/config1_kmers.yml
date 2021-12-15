@@ -21,7 +21,7 @@ CSM_scripts_dir: "/home/runner/work/MAPP/MAPP/modules/CREATE_SITECOUNT_MATRICES/
 CSM_outdir: "/home/runner/work/MAPP/MAPP/modules/CREATE_SITECOUNT_MATRICES/output"
 
 # path to the genomic sequence in fasta format
-CSM_genomic_sequence: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+CSM_genomic_sequence: "/home/runner/work/MAPP/MAPP/.test/integration/module_CSM/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 
 # relative ranges around respective sites
 CSM_regions_ranges:
