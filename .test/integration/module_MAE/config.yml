@@ -14,27 +14,27 @@
 
 # path to the directory with all the scripts for this pipeline
 # (relative to the 'execution' directory)
-MAE_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/MAEI/scripts"
+MAE_scripts_dir: "/home/runner/work/MAPP/MAPP/modules/MAEI/scripts"
 
 # path for the output directory
 # (relative to the 'execution' directory)
-MAE_outdir: "/builds/zavolan_group/pipelines/mapp/modules/MAEI/output"
+MAE_outdir: "/home/runner/work/MAPP/MAPP/modules/MAEI/output"
 
 # path to the quantified per-exon summed-up transcript expression information
 # (as in the output of QEI module)
-MAE_inclusion_table: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_MAE/inclusion_table.tsv"
+MAE_inclusion_table: "/home/runner/work/MAPP/MAPP/.test/integration/module_MAE/inclusion_table.tsv"
 
 # TSV-formatted design table with information regarding RNA-Seq samples (quality-filtered set)
-MAE_design_file: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_MAE/design_table.tsv"
+MAE_design_file: "/home/runner/work/MAPP/MAPP/.test/integration/module_MAE/design_table.tsv"
 
 # per-region, per-window paths to the sitecount matrices
 MAE_sitecount_matrices:
   "3ss":
-    "u0to0.d0to50": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_MAE/3ss/u0to0.d0to50/matrix.tsv"
-    "u50to0.d0to0": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_MAE/3ss/u50to0.d0to0/matrix.tsv"
+    "u0to0.d0to50": "/home/runner/work/MAPP/MAPP/.test/integration/module_MAE/3ss/u0to0.d0to50/matrix.tsv"
+    "u50to0.d0to0": "/home/runner/work/MAPP/MAPP/.test/integration/module_MAE/3ss/u50to0.d0to0/matrix.tsv"
   "5ss":
-    "u0to0.d0to50": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_MAE/5ss/u0to0.d0to50/matrix.tsv"
-    "u50to0.d0to0": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_MAE/5ss/u50to0.d0to0/matrix.tsv"
+    "u0to0.d0to50": "/home/runner/work/MAPP/MAPP/.test/integration/module_MAE/5ss/u0to0.d0to50/matrix.tsv"
+    "u50to0.d0to0": "/home/runner/work/MAPP/MAPP/.test/integration/module_MAE/5ss/u50to0.d0to0/matrix.tsv"
 
 # minimal fraction of sequences which must contain a binding site / kmer
 # for a given motif in order for that motif to be considered (for a given window)

@@ -14,28 +14,28 @@
 
 # path to the directory with all the scripts for this pipeline
 # (relative to the 'execution' directory)
-PAQ_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/PAQR/scripts"
+PAQ_scripts_dir: "/home/runner/work/MAPP/MAPP/modules/PAQR/scripts"
 
 # path for the output directory
 # (relative to the 'execution' directory)
-PAQ_outdir: "/builds/zavolan_group/pipelines/mapp/modules/PAQR/output"
+PAQ_outdir: "/home/runner/work/MAPP/MAPP/modules/PAQR/output"
 
 # path to the poly(A) site set
 # (sites located on terminal exons with at least two poly(A) sites on the exon
-PAQ_tandem_pas: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/tandem_pas.terminal_exons.clean.bed"
+PAQ_tandem_pas: "/home/runner/work/MAPP/MAPP/.test/integration/module_PAQ/tandem_pas.terminal_exons.clean.bed"
 
 # per-sample paths to the bam files with genomic alignments
 # IMPORTANT:
 # It is required by the python libraries that indices of the alignments are located in the same directory.
 # Example: /sample.bam must be placed alongside /sample.bam.bai 
 PAQ_mapped_samples:
-  "sample_A": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/sample_A.bam"
-  "sample_B": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/sample_B.bam"
+  "sample_A": "/home/runner/work/MAPP/MAPP/.test/integration/module_PAQ/sample_A.bam"
+  "sample_B": "/home/runner/work/MAPP/MAPP/.test/integration/module_PAQ/sample_B.bam"
 
 # per-sample paths to the bai files with genomic alignments' indices
 PAQ_mapped_samples_indices:
-  "sample_A": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/sample_A.bam.bai"
-  "sample_B": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/sample_B.bam.bai"
+  "sample_A": "/home/runner/work/MAPP/MAPP/.test/integration/module_PAQ/sample_A.bam.bai"
+  "sample_B": "/home/runner/work/MAPP/MAPP/.test/integration/module_PAQ/sample_B.bam.bai"
 
 # per-sample condition flag:
 PAQ_mapped_samples_conditions:
@@ -43,7 +43,7 @@ PAQ_mapped_samples_conditions:
   "sample_B": "treated"
 
 # TSV-formatted design table with information regarding RNA-Seq samples (quality-filtered set)
-PAQ_design_file: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_PAQ/design_table.tsv"
+PAQ_design_file: "/home/runner/work/MAPP/MAPP/.test/integration/module_PAQ/design_table.tsv"
 
 # number of nucleotides for which the coverage profile is extended
 # and obtained downstream of each annotated exon end
@@ -92,5 +92,8 @@ PAQ_upstream_cluster_extension: "200"
 # upper limit on the ratio of coverage mean squared error values
 # after and before including a new break point 
 PAQ_coverage_mse_ratio_limit: "0.5"
+
+# TPM pseudocount to be added in the final expression table
+PAQ_expression_pseudocount: "1"
 
 ...

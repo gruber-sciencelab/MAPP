@@ -14,14 +14,14 @@
 
 # path to the directory with all the scripts for this pipeline
 # (relative to the 'execution' directory)
-CSM_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/CREATE_SITECOUNT_MATRICES/scripts"
+CSM_scripts_dir: "/home/runner/work/MAPP/MAPP/modules/CREATE_SITECOUNT_MATRICES/scripts"
 
 # path for the output directory
 # (relative to the 'execution' directory)
-CSM_outdir: "/builds/zavolan_group/pipelines/mapp/modules/CREATE_SITECOUNT_MATRICES/output"
+CSM_outdir: "/home/runner/work/MAPP/MAPP/modules/CREATE_SITECOUNT_MATRICES/output"
 
 # path to the genomic sequence in fasta format
-CSM_genomic_sequence: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+CSM_genomic_sequence: "/home/runner/work/MAPP/MAPP/.test/integration/module_CSM/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 
 # relative ranges around respective sites
 CSM_regions_ranges:
@@ -31,9 +31,9 @@ CSM_regions_ranges:
 
 # paths to the bed-formatted sites
 CSM_regions_files:
-  "polyA": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_CSM/tandem_pas.terminal_exons.clean.bed"
-  "3ss": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_CSM/3ss.bed"
-  "5ss": "/builds/zavolan_group/pipelines/mapp/.test/integration/module_CSM/5ss.bed"
+  "polyA": "/home/runner/work/MAPP/MAPP/.test/integration/module_CSM/tandem_pas.terminal_exons.clean.bed"
+  "3ss": "/home/runner/work/MAPP/MAPP/.test/integration/module_CSM/3ss.bed"
+  "5ss": "/home/runner/work/MAPP/MAPP/.test/integration/module_CSM/5ss.bed"
 
 # sliding window configuration: window size and slide step
 CSM_window_size: "50"
@@ -49,7 +49,7 @@ CSM_kmer_max: "0"
 
 # options for "pwms" sitecount matrices:
 # path to the directory with TRANSFAC-formatted PWM files
-CSM_pwm_directory: "/builds/zavolan_group/pipelines/mapp/.test/integration/module_CSM/PWM"
+CSM_pwm_directory: "/home/runner/work/MAPP/MAPP/.test/integration/module_CSM/PWM"
 
 # MotEvo parameter: prior probability for the background binding
 CSM_MotEvo_bg_binding_prior: 0.99
