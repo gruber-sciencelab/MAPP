@@ -21,10 +21,10 @@ ASE_scripts_dir: "/home/runner/work/MAPP/MAPP/modules/EXTRACT_AS_EXONS/scripts"
 ASE_outdir: "/home/runner/work/MAPP/MAPP/modules/EXTRACT_AS_EXONS/output"
 
 # path to the genomic annotation in GTF format
-ASE_genomic_annotation: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
+ASE_genomic_annotation: "/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/Homo_sapiens.GRCh38.102.gtf"
 
 # path to the genomic sequence in fasta format
-ASE_genomic_sequence: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+ASE_genomic_sequence: "/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 
 # regions of interest around the splice sites
 ASE_3ss_region_up: "50"

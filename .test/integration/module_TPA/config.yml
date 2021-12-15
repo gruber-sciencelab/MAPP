@@ -27,7 +27,7 @@ TPA_outdir: "/home/runner/work/MAPP/MAPP/modules/PREPARE_TANDEM_PAS/output"
 TPA_pas_atlas: "/home/runner/work/MAPP/MAPP/ATLAS2_hsa/clean-atlas.bed"
 
 # path to the genomic annotation in GTF format
-TPA_genomic_annotation: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
+TPA_genomic_annotation: "/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/Homo_sapiens.GRCh38.102.gtf"
 
 # flag to turn on specificity for a given library type:
 # stranded or unstranded
