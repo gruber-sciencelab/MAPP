@@ -73,4 +73,102 @@ jobs:
           --conda-create-envs-only \
           --cores 8
 
+  KPC-module:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+
+      - name: Checkout mapp repository
+        uses: actions/checkout@v2
+
+      - name: Setup miniconda & mapp main environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: false
+          environment-file: env/environment.yml
+          activate-environment: mapp
+          auto-activate-base: false
+
+      - name: Display all miniconda & env info
+        run: |
+          conda info -a
+          conda list
+
+      - name: Create snakemake DAG
+        run: |
+          bash modules/KAPAC/execution/run.sh \
+          -c .test/integration/module_KPC/config.yml \
+          -e local \
+          -t conda \
+          -g dag dag.svg
+
+      - name: Initiate snakemake dry run
+        run: |
+          snakemake \
+          --snakefile=modules/KAPAC/Snakefile \
+          --configfile=.test/integration/module_KPC/config.yml \
+          --printshellcmds \
+          --dryrun \
+          --verbose
+
+      - name: Build conda envs for all the rules
+        run: |
+          snakemake \
+          --snakefile=modules/KAPAC/Snakefile \
+          --configfile=.test/integration/module_KPC/config.yml \
+          --use-conda \
+          --conda-create-envs-only \
+          --cores 8
+
+  RES-module:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+
+      - name: Checkout mapp repository
+        uses: actions/checkout@v2
+
+      - name: Setup miniconda & mapp main environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: false
+          environment-file: env/environment.yml
+          activate-environment: mapp
+          auto-activate-base: false
+
+      - name: Display all miniconda & env info
+        run: |
+          conda info -a
+          conda list
+
+      - name: Create snakemake DAG
+        run: |
+          bash modules/REPORT_RESULTS/execution/run.sh \
+          -c .test/integration/module_RES/config.yml \
+          -e local \
+          -t conda \
+          -g dag dag.svg
+
+      - name: Initiate snakemake dry run
+        run: |
+          snakemake \
+          --snakefile=modules/REPORT_RESULTS/Snakefile \
+          --configfile=.test/integration/module_RES/config.yml \
+          --printshellcmds \
+          --dryrun \
+          --verbose
+
+      - name: Build conda envs for all the rules
+        run: |
+          snakemake \
+          --snakefile=modules/REPORT_RESULTS/Snakefile \
+          --configfile=.test/integration/module_RES/config.yml \
+          --use-conda \
+          --conda-create-envs-only \
+          --cores 8
+
 ...
