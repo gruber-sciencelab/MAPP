@@ -14,20 +14,20 @@
 
 # path to the directory with all the scripts for this pipeline
 # (relative to the 'execution' directory)
-TPA_scripts_dir: "/builds/zavolan_group/pipelines/mapp/modules/PREPARE_TANDEM_PAS/scripts"
+TPA_scripts_dir: "/home/runner/work/MAPP/MAPP/modules/PREPARE_TANDEM_PAS/scripts"
 
 # path for the output directory
 # (relative to the 'execution' directory)
-TPA_outdir: "/builds/zavolan_group/pipelines/mapp/modules/PREPARE_TANDEM_PAS/output"
+TPA_outdir: "/home/runner/work/MAPP/MAPP/modules/PREPARE_TANDEM_PAS/output"
 
 # BED-formatted atlas of poly(A) sites
 # ATTENTION:
 # Score entry (column 5) is expected to contain a number of protocols
 # with which a poly(A) site was identified.
-TPA_pas_atlas: "/builds/zavolan_group/pipelines/mapp/ATLAS2_hsa/clean-atlas.bed"
+TPA_pas_atlas: "/home/runner/work/MAPP/MAPP/ATLAS2_hsa/clean-atlas.bed"
 
 # path to the genomic annotation in GTF format
-TPA_genomic_annotation: "/builds/zavolan_group/pipelines/mapp/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
+TPA_genomic_annotation: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf"
 
 # flag to turn on specificity for a given library type:
 # stranded or unstranded
