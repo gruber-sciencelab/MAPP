@@ -1,41 +1,4 @@
 
-MAPP_test2:
-  script:
-    #
-    # test2: parameters set 2
-    #
-    # for this test it is required that we set the
-    # modification date of resources files as older than
-    # the pipeline files (expected situation):
-    - touch -a -m -t 200001010000.00 resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf
-    - touch -a -m -t 200001010000.00 resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa
-    - touch -a -m -t 200001010000.00 ATLAS2_hsa/reformatted_filtered_atlas.bed
-    # according to the notes in the pipeline configuration:
-    # comment-out ASE, TPA and CSM modules inclusion from the main Snakefile:
-    - sed '52 {s/^/#/}' -i Snakefile
-    - sed '53 {s/^/#/}' -i Snakefile
-    - sed '56 {s/^/#/}' -i Snakefile
-    # create the main MAPP configfile:
-    - >
-      python scripts/create-main-config-file.py
-      --config-template .test/integration/MAPP/config_template_2.yml
-      --pipeline-configfile configs/config.yml
-      --cluster-configfile configs/cluster_config.json
-    # snakemake DAG takes soo much time for the whole MAPP
-    # run snakemake rulegraph instead (test script):
-    - bash execution/snakemake_rulegraph_run.sh
-    # snakemake dry run:
-    - >
-      snakemake
-      --snakefile=Snakefile
-      --configfile=configs/config.yml
-      --printshellcmds
-      --dryrun
-      --verbose
-    # build conda env for the final MAPP-level rule
-    # with summary archive compression:
-    - conda env create -f env/tar.yml
-
 PQA_module:
   script:
     # overwrite w/ the test config:

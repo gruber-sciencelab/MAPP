@@ -24,7 +24,7 @@ on:
 
 jobs:
 
-  MAPP-test1:
+  MAPP-test2:
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -63,6 +63,23 @@ jobs:
         run: |
           bash scripts/download-and-parse-ATtRACT-motifs.sh \
           --output-directory ATtRACT_hsa
+
+      # for this test it is required that we set the
+      # modification date of resources files as older than
+      # the pipeline files (expected situation):
+      - name: Adjust modification date for resources
+        run: |
+          touch -a -m -t 200001010000.00 resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.102.gtf
+          touch -a -m -t 200001010000.00 resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa
+          touch -a -m -t 200001010000.00 ATLAS2_hsa/reformatted_filtered_atlas.bed
+
+      # according to the notes in the pipeline configuration:
+      # comment-out ASE, TPA and CSM modules inclusion from the main Snakefile:
+      - name: Comment-out ASE, TPA, CSM modules
+        run: |
+          sed '52 {s/^/#/}' -i Snakefile
+          sed '53 {s/^/#/}' -i Snakefile
+          sed '56 {s/^/#/}' -i Snakefile
 
       - name: Create the main configfile
         run: |
