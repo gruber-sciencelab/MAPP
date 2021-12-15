@@ -24,7 +24,7 @@ TPA_outdir: "/home/runner/work/MAPP/MAPP/modules/PREPARE_TANDEM_PAS/output"
 # ATTENTION:
 # Score entry (column 5) is expected to contain a number of protocols
 # with which a poly(A) site was identified.
-TPA_pas_atlas: "/home/runner/work/MAPP/MAPP/ATLAS2_hsa/clean-atlas.bed"
+TPA_pas_atlas: "/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/clean-atlas.bed"
 
 # path to the genomic annotation in GTF format
 TPA_genomic_annotation: "/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/Homo_sapiens.GRCh38.102.gtf"
