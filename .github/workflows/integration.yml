@@ -7,7 +7,7 @@
 #   AFFILIATION: Swiss_Institute_of_Bioinformatics
 #   CONTACT: maciej.bak@unibas.ch
 #   CREATED: 14-12-2021
-#   LICENSE: MIT
+#   LICENSE: Apache_2.0
 #
 ###############################################################################
 ---
@@ -46,7 +46,23 @@ jobs:
         run: |
           conda info -a
           conda list
-          pwd
+
+      - name: Download genomic resources
+        run: |
+          bash scripts/download-ENSEMBL-resources.sh \
+          --species hsa \
+          --output-directory resources_ENSEMBL_hsa
+
+      - name: Download the atlas of PolyA sites
+        run: |
+          bash scripts/download-polyA-atlas.sh \
+          --species hsa \
+          --output-directory ATLAS2_hsa
+
+      - name: Download and parse ATtRACT motifs
+        run: |
+          bash scripts/download-and-parse-ATtRACT-motifs.sh \
+          --output-directory ATtRACT_hsa
 
       - name: Create the main configfile
         run: |
