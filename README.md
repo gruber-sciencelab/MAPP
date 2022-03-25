@@ -172,6 +172,12 @@ bash execution/run.sh \
   -t conda \
   -g dag DAG.svg
 
+# run MAPP locally with conda
+bash execution/run.sh \
+  -c configs/config.yml \
+  -e local \
+  -t conda
+
 # run MAPP on a SLURM-managed cluster with Conda technology
 bash execution/run.sh \
   -c configs/config.yml \
