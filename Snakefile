@@ -36,10 +36,10 @@ rule all:
     Gathering all output
     """
     input:
-        TARBZ2_summary = expand(
+        TARGZ_summary = expand(
             os.path.join(
                 "{MAPP_pipeline_directory}",
-                "summary.tar.bz2"
+                "summary.tar.gz"
             ),
             MAPP_pipeline_directory = config["MAPP_pipeline_directory"]
         )
@@ -351,9 +351,9 @@ rule MAPP_summary_tarball:
         )
 
     output:
-        TARBZ2_summary = os.path.join(
+        TARGZ_summary = os.path.join(
             "{MAPP_pipeline_directory}",
-            "summary.tar.bz2"
+            "summary.tar.gz"
         )
 
     params:
@@ -395,8 +395,8 @@ rule MAPP_summary_tarball:
         """
         tar \
         --exclude=.snakemake_timestamp \
-        -cjvf \
-        {output.TARBZ2_summary} \
+        -czvf \
+        {output.TARGZ_summary} \
         -C {params.DIR_pipeline_directory} \
         summary \
         1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
