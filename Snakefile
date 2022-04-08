@@ -36,10 +36,10 @@ rule all:
     Gathering all output
     """
     input:
-        TARBZ2_summary = expand(
+        TARGZ_summary = expand(
             os.path.join(
                 "{MAPP_pipeline_directory}",
-                "summary.tar.bz2"
+                "summary.tar.gz"
             ),
             MAPP_pipeline_directory = config["MAPP_pipeline_directory"]
         )
