@@ -133,7 +133,19 @@ def check_config_paths(config_template):
         print("### ERROR ###")
         print("Please provide a correct path for the \"PAS_atlas\" parameter")
         exit()
-    
+
+    if config_template["genomic_index"] == "":
+        home_index = config_template["genomic_sequence"].split(os.sep)[-1]
+        suffix = "__index_sjdbOverhang" + str(config_template["sjdbOverhang"])
+        home_index = os.path.join(
+            os.path.expanduser("~"),
+            home_index + suffix
+        )
+        config_template["genomic_index"] = home_index
+        print("### WARNING ###")
+        print("No value provided for the \"genomic_index\" parameter")
+        print("Setting a default value of: " + home_index)
+
 
 def main():
     """Main body of the script."""
