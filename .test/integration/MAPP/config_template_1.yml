@@ -44,7 +44,7 @@ genomic_sequence: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapien
 
 # Path to the genomic index generated with STAR
 # (if no index is present a new one will be created at the following path)
-genomic_index: "/home/runner/work/MAPP/MAPP/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.index"
+genomic_index: ""
 
 # Path to the design table with information about RNA-Seq samples
 analysis_design_table: "/home/runner/work/MAPP/MAPP/.test/integration/MAPP/design_table.tsv"
