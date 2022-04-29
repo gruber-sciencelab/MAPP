@@ -4,7 +4,7 @@ cores: 256
 printshellcmds: true
 rerun-incomplete: true
 use-conda: true
-conda-frontend: conda
+conda-frontend: mamba
 keep-going: true
 jobscript: "slurm-jobscript.sh"
 cluster: "slurm-submit.py"
