@@ -82,12 +82,68 @@ def generate_windows(size, up, down):
     return windows_directories
 
 
+def check_config_paths(config_template):
+    """Check if all the paths have been provided correctly."""
+
+    if not os.path.isdir(config_template["MAPP_directory"]):
+        print("### ERROR ###")
+        print("Please provide a correct path for the \"MAPP_directory\" parameter")
+        exit()
+    
+    if not os.path.exists(config_template["genomic_annotation"]):
+        print("### ERROR ###")
+        print("Please provide a correct path for the \"genomic_annotation\" parameter")
+        exit()
+    
+    if not os.path.exists(config_template["genomic_sequence"]):
+        print("### ERROR ###")
+        print("Please provide a correct path for the \"genomic_sequence\" parameter")
+        exit()
+    
+    if not os.path.exists(config_template["analysis_design_table"]):
+        print("### ERROR ###")
+        print("Please provide a correct path for the \"analysis_design_table\" parameter")
+        exit()
+    
+    if config_template["matrix_type"] == "kmers":
+
+        if config_template["PWM_directory"] != "":
+            print("### ERROR ###")
+            print("Invalid value for \"PWM_directory\" parameter: please provide \"\" for a k-mer based analysis")
+            exit()
+        
+        if config_template["seqlogo_directory"] != "":
+            print("### ERROR ###")
+            print("Invalid value for \"seqlogo_directory\" parameter: please provide \"\" for a k-mer based analysis")
+            exit()
+
+    if config_template["matrix_type"] == "pwms":
+
+        if not os.path.isdir(config_template["PWM_directory"]):
+            print("### ERROR ###")
+            print("Invalid value for \"PWM_directory\" parameter: please provide a correct path for a PWM based analysis")
+            exit()
+        
+        if not os.path.isdir(config_template["seqlogo_directory"]):
+            print("### ERROR ###")
+            print("Invalid value for \"seqlogo_directory\" parameter: please provide a correct path for a PWM based analysis")
+            exit()
+
+    if not os.path.exists(config_template["PAS_atlas"]):
+        print("### ERROR ###")
+        print("Please provide a correct path for the \"PAS_atlas\" parameter")
+        exit()
+    
+
 def main():
     """Main body of the script."""
 
     # read the YAML config template
     with open(options.template, "r") as f:
         template = yaml.safe_load(f)
+
+    # check paths in the config template
+    check_config_paths(template)
 
     # parse the samples design table
     design_table = pd.read_csv(template["analysis_design_table"], sep="\t")
