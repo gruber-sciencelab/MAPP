@@ -83,4 +83,4 @@ bash execution/run.sh \
 --configfile configs/config.yml \
 --environment local  \
 --technology conda \
---cores="$CORES"
+--cores "$CORES"
