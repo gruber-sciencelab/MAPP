@@ -6,7 +6,6 @@ rerun-incomplete: true
 use-conda: true
 conda-frontend: conda
 keep-going: true
-verbose: true
 jobscript: "slurm-jobscript.sh"
 cluster: "slurm-submit.py"
 cluster-status: "slurm-status.py"

@@ -57,6 +57,7 @@ if printf '%s\n' "$@" | grep -q '^--help$'; then
     echo "  -b/--bind {XXX,YYY} (OPTIONAL)"
     echo "  For workflow execution in a cluster env. with singularity tech:"
     echo "  additional ABSOLUTE paths that need to be accessible from the containers."
+    echo "  (\$HOME directory is mounted by default)"
     echo ""
     echo "  -g/--graph {rulegraph/dag} {XXX} (OPTIONAL)"
     echo "  Do not call the execution."
@@ -67,6 +68,10 @@ if printf '%s\n' "$@" | grep -q '^--help$'; then
     echo "  -r/--report {XXX} (OPTIONAL)"
     echo "  Do not call the execution."
     echo "  Instead - generate Snakemake report afer the workflow run (HTML)."
+    echo ""
+    echo "  -n/--cores {XXX} (OPTIONAL)"
+    echo "  Number of local cores provided to the workflow."
+    echo "  (Default: 1)"
     exit 0
 fi
 
@@ -105,6 +110,11 @@ do
             ;;
         -r|--report)
             REPORTPATH="$2"
+            shift # past argument
+            shift # past value
+            ;;
+        -n|--cores)
+            CORES="$2"
             shift # past argument
             shift # past value
             ;;
@@ -171,6 +181,11 @@ if [ -n "$REPORTPATH" ]; then
     exit 0
 fi
 
+# check for overwriting the default number of cores
+if [ -z "$CORES" ]; then
+    CORES=1
+fi
+
 # if this is not a graph run - check other parameters
 if [ -z "$ENV" ]; then
     echo "Invalid arguments. Please provide --environment"
@@ -194,23 +209,27 @@ case "$ENV$TECH" in
     localconda)
         snakemake \
             --configfile="$CONFIGFILE" \
-            --profile="../profiles/local-conda"
+            --profile="../profiles/local-conda" \
+            --cores="$CORES"
         ;;
     localsingularity)
         snakemake \
             --configfile="$CONFIGFILE" \
             --profile="../profiles/local-singularity" \
-            --singularity-args "--no-home --bind ${PWD}/..,$BINDPATHS"
+            --singularity-args "--bind ${PWD}/..,$BINDPATHS" \
+            --cores="$CORES"
         ;;
     slurmconda)
         snakemake \
             --configfile="$CONFIGFILE" \
-            --profile="../profiles/slurm-conda"
+            --profile="../profiles/slurm-conda" \
+            --cores="$CORES"
         ;;
     slurmsingularity)
         snakemake \
             --configfile="$CONFIGFILE" \
             --profile="../profiles/slurm-singularity" \
-            --singularity-args "--no-home --bind ${PWD}/..,$BINDPATHS"
+            --singularity-args "--bind ${PWD}/..,$BINDPATHS" \
+            --cores="$CORES"
         ;;
 esac

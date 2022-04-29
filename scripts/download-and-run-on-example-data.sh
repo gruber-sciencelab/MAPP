@@ -17,6 +17,29 @@
 #
 ###############################################################################
 
+# parse the optional number of cores
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+    case $key in
+        -n|--cores)
+            CORES="$2"
+            shift # past argument
+            shift # past value
+            ;;
+        *) # unknown option
+            POSITIONAL+=("$1") # save it in an array for later
+            shift # past argument
+            ;;
+    esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+if [ -z "$CORES" ]; then
+    CORES=1
+fi
+
 echo "### Downloading test dataset ###"
 wget https://zenodo.org/record/5772967/files/MAPP_test_data.tar.gz
 
@@ -59,4 +82,5 @@ python scripts/create-main-config-file.py \
 bash execution/run.sh \
 --configfile configs/config.yml \
 --environment local  \
---technology conda
+--technology conda \
+--cores="$CORES"
