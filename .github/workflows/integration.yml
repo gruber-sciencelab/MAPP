@@ -42,6 +42,9 @@ jobs:
           activate-environment: mapp
           auto-activate-base: false
 
+      - name: Add mamba for the CI
+        run: conda install -c conda-forge mamba=0.13.0
+
       - name: Display all miniconda & env info
         run: |
           conda info -a
