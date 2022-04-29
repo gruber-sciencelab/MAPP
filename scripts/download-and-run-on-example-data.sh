@@ -70,10 +70,8 @@ if [ "$(uname)" == "Linux" ]; then
     PAS_atlas=${MAPP_directory}/MAPP_test_data/polyAsiteAtlas2.chr21.bed
     sed -i '55s|""|"'$PAS_atlas'"|'  MAPP_test_data/config_template.yml
 
-    #echo "### Building conda env for MAPP workflow ###"
+    #echo "### Activating conda env for MAPP workflow ###"
     source $CONDA_PREFIX/etc/profile.d/conda.sh
-    conda env remove --name mapp
-    bash scripts/create-conda-environment.sh
     conda activate mapp
 
 fi
@@ -98,10 +96,8 @@ if [ "$(uname)" == "Darwin" ]; then
     PAS_atlas=${MAPP_directory}/MAPP_test_data/polyAsiteAtlas2.chr21.bed
     sed -i '' -e '55s|""|"'$PAS_atlas'"|'  MAPP_test_data/config_template.yml
 
-    #echo "### Building conda env for MAPP workflow ###"
+    #echo "### Activating conda env for MAPP workflow ###"
     source $CONDA_PREFIX/etc/profile.d/conda.sh
-    conda env remove --name mapp
-    bash scripts/create-conda-environment.sh
     conda activate mapp
 
 fi
