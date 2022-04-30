@@ -13,9 +13,9 @@ MAPP is a computational method which enables identification of binding motifs fo
 
 1. [General information](#general-information)
 2. [Installation instructions](#installation-instructions)
-3. [Workflow execution](#workflow-execution)
-4. [Appendix A: Download and installation of Miniconda3 and Mamba](#appendix-a-download-and-installation-of-miniconda3-and-mamba)
-5. [Appendix B: Test run on an example dataset](#appendix-b-test-run-on-an-example-dataset)
+3. [Execution test](#execution-test)
+4. [Workflow execution](#workflow-execution)
+5. [Appendix A: Download and installation of Miniconda3 and Mamba](#appendix-a-download-and-installation-of-miniconda3-and-mamba)
 
 ## General information
 
@@ -39,8 +39,22 @@ Snakemake is a workflow management system that helps to create and execute data 
 
 MAPP installation is therefore automatised and limitted to downloading the following repository (also possible with `git clone` command, provided Git version control system is available), navigating to the MAPP directory and running a shell script which will build the environment for the workflow. This may be achieved by the following command: `bash scripts/create-conda-environment.sh`
 
-We have also prepared a minimal dataset in order to test the correct execution of MAPP on a local machine.  
-More on that in [Appendix B](#appendix-b-test-run-on-an-example-dataset).
+We have also prepared a minimal dataset in order to test the correct execution of MAPP on a local machine (more information below).
+
+**Currently MAPP supports machines with a Linux operating system.**
+
+## Execution test
+In order to facilitate testing MAPP we have prepared [a small test set of input data](https://doi.org/10.5281/zenodo.5566676) as well as a bash script which will download it and handle all of the below-described analysis setup automatically. The script will also trigger the workflow on the local machine with per-rule conda environments mechanism in place. The whole analysis should take below 48h to finish. To execute this test run you will need to navigate to the directory into which you have cloned our repository and type:
+
+```bash
+bash scripts/download-and-run-on-example-data.sh
+```
+
+Additionally, in order to speed up the test, this workflow run may be parallelized by providing a higher number of cores available for the pipeline, ex:
+
+```bash
+bash scripts/download-and-run-on-example-data.sh --cores 8
+```
 
 ## Workflow execution
 
@@ -126,12 +140,11 @@ There are several ways to start the pipeline, depending on the following options
 * local run vs. cluster support. The former initiates the workflow on a local machine. We recommend at least 16 cores and 100GB of RAM available for such analyses. The latter submits each Snakemake rule as a separate job to a computational cluster. In that way there is little to none workload on the local machine. We have tested MAPP on a SLURM-managed cluster.
 * Conda environments vs. Singularity containers. Technology which should be utilized to ensure reproducibility of the analyses. The former selection is tied to building a dedicated Conda environment for each Snakemake rule in the workflow. The latter implies pulling Docker images from online servers and converting them to [Singularity] images - all rules will be executed within. This option requires *Singularity* to be installed on the local machine (and the cluster, if specified).
 
-All of these options are encapsulated in distinct [Snakemake profiles](https://github.com/Snakemake-Profiles/doc) and the users who need to execute MAPP on different archtectures are encouraged to build their own profiles and give us a feedback.
+All of these options are encapsulated in distinct [Snakemake profiles](https://github.com/Snakemake-Profiles/doc). Users who would like to execute MAPP on computational clusters with a queuing engine different than SLURM are encouraged to build their own profiles, give us a feedback and we would happily include new configuration settings into this repository!
 
 In order to execute MAPP please run the master script with proper flags, as presented below:
 
 ```
-$ bash execution/run.sh --help
 This is the main script to call the MAPP workflow.
 Available options:
 
@@ -151,6 +164,7 @@ Available options:
   -b/--bind {XXX,YYY} (OPTIONAL)
   For workflow execution in a cluster env. with singularity tech:
   additional ABSOLUTE paths that need to be accessible from the containers.
+  ($HOME directory is mounted by default)
 
   -g/--graph {rulegraph/dag} {XXX} (OPTIONAL)
   Do not call the execution.
@@ -161,6 +175,10 @@ Available options:
   -r/--report {XXX} (OPTIONAL)
   Do not call the execution.
   Instead - generate Snakemake report afer the workflow run (HTML).
+
+  -n/--cores {XXX} (OPTIONAL)
+  Number of local cores provided to the workflow.
+  (Default: 1)
 ```
 
 Examples:
@@ -172,19 +190,14 @@ bash execution/run.sh \
   -t conda \
   -g dag DAG.svg
 
-# run MAPP locally with conda
-bash execution/run.sh \
-  -c configs/config.yml \
-  -e local \
-  -t conda
-
-# run MAPP on a SLURM-managed cluster with Conda technology
+# run MAPP on a SLURM-managed cluster with Conda technology with 64 cores
 bash execution/run.sh \
   -c configs/config.yml \
   -e slurm \
-  -t conda
+  -t conda \
+  -n 64
 
-# run MAPP locally with Singularity technology
+# run MAPP locally with Singularity technology with one core
 bash execution/run.sh \
   -c configs/config.yml \
   -e local \
@@ -194,7 +207,7 @@ bash execution/run.sh \
 
 ### Additional notes
 
-* The most important output of the whole workflow will be collected and summarized in a compressed directory: `summary.tar.bz2` located inside the MAPP directory.
+* The most important output of the whole workflow will be collected and summarized in a compressed directory: `summary.tar.bz2` located inside the MAPP directory. All results are available in per-module output directories: `modules/*/output`. These folders also contain corresponding logs: both cluster submission info as well as per-job standard output and error streams. Logs of top-level snakemake rules will be stored under `logs` upon succesfull finish of the workflow.
 * In case the user would like to provide a custom set of PWMs - please do not use "|" character in the motifs' names. It is reserved.
 * Please note that in case Miniconda is not installed in the default `$HOME` directory of the user the path in `jobscript.sh` file for each of the Snakemake profiles might need to be modified.
 * In case of analysing very big datasets default resources specified in cluster configuration files (for example: `configs/slurm-config.json`) might need to be adjusted.
@@ -217,16 +230,6 @@ Mamba **has to** be installed in the `base` environment with:
 ```bash
 conda install -n base -c conda-forge mamba
 ```
-
-## Appendix B: Test run on an example dataset
-
-In order to facilitate testing MAPP we have prepared [a small test set of input data](https://doi.org/10.5281/zenodo.5566676) as well as a bash script which will download it and handle all of the above-described analysis setup automatically. The script will also trigger the workflow on the local machine with per-rule Conda environments mechanism in place. The whole analysis should take below 48h to finish. To execute this test run you will need to navigate to the directory into which you have cloned our repository and type:
-
-```bash
-bash scripts/download-and-run-on-example-data.sh
-```
-
-
 
 
 [Snakemake]: https://snakemake.readthedocs.io/en/stable/
