@@ -1,6 +1,6 @@
-<img align="right" width="60" height="60" src="images/mapp_logo.png">
+<img align="right" width="48" height="60" src="images/mapp_logo.png">
 
-[![Build](https://git.scicore.unibas.ch/zavolan_group/pipelines/mapp/badges/clean/pipeline.svg)](https://git.scicore.unibas.ch/zavolan_group/pipelines/mapp/-/pipelines)
+[![integration](https://github.com/gruber-sciencelab/mapp/workflows/integration/badge.svg)](https://github.com/gruber-sciencelab/mapp/actions?query=workflow%3Aintegration)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Code style: styler](https://img.shields.io/badge/code%20style-styler-orange)](https://github.com/r-lib/styler)
 [![License](https://img.shields.io/badge/license-Apache--2.0-yellowgreen)](https://www.apache.org/licenses/LICENSE-2.0)
