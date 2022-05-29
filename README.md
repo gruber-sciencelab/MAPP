@@ -4,6 +4,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Code style: styler](https://img.shields.io/badge/code%20style-styler-orange)](https://github.com/r-lib/styler)
 [![License](https://img.shields.io/badge/license-Apache--2.0-yellowgreen)](https://www.apache.org/licenses/LICENSE-2.0)
+[![preprint](https://img.shields.io/badge/preprint-bioRxiv-blue)](https://www.biorxiv.org/content/10.1101/2022.01.09.475576)
 
 # MAPP (Motif Activity on Pre-mRNA Processing)
 
@@ -207,7 +208,7 @@ bash execution/run.sh \
 
 ### Additional notes
 
-* The most important output of the whole workflow will be collected and summarized in a compressed directory: `summary.tar.bz2` located inside the MAPP directory. All results are available in per-module output directories: `modules/*/output`. These folders also contain corresponding logs: both cluster submission info as well as per-job standard output and error streams. Logs of top-level snakemake rules will be stored under `logs` upon succesfull finish of the workflow.
+* The most important output of the whole workflow will be collected and summarized in a compressed directory: `summary.tar.gz` located inside the MAPP directory. All results are available in per-module output directories: `modules/*/output`. These folders also contain corresponding logs: both cluster submission info as well as per-job standard output and error streams. Logs of top-level snakemake rules will be stored under `logs` upon succesfull finish of the workflow.
 * In case the user would like to provide a custom set of PWMs - please do not use "|" character in the motifs' names. It is reserved.
 * Please note that in case Miniconda is not installed in the default `$HOME` directory of the user the path in `jobscript.sh` file for each of the Snakemake profiles might need to be modified.
 * In case of analysing very big datasets default resources specified in cluster configuration files (for example: `configs/slurm-config.json`) might need to be adjusted.

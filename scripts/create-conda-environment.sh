@@ -15,4 +15,4 @@
 ###############################################################################
 
 CWD="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-conda env create --file "$CWD"/../env/environment.yml
+mamba env create --file "$CWD"/../env/environment.yml

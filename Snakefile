@@ -183,8 +183,8 @@ rule MAPP_collect_summary:
             {output.DIR_pipeline_summary}/results/motifs-list-pas.txt
         cp -r \
             {params.DIR_RES_module_outdir}/Zscores_heatmaps \
-            {output.DIR_pipeline_summary}/results/heatmaps)
-        {params.STR_pwm_seqlogos_copy_command}
+            {output.DIR_pipeline_summary}/results/heatmaps
+        {params.STR_pwm_seqlogos_copy_command})
         1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
         """
 
