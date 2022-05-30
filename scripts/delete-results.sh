@@ -21,5 +21,5 @@ do
     rm -rf "$dir"/output
 done
 
-rm -f "$SCRIPTDIR"/../summary.tar.bz2
+rm -f "$SCRIPTDIR"/../summary.tar.gz
 rm -rf "$SCRIPTDIR"/../summary "$SCRIPTDIR"/../logs

@@ -23,7 +23,7 @@ configs/config.yml
 
 # pipeline summary + summary logs
 summary/
-summary.tar.bz2
+summary.tar.gz
 logs/
 
 # all the default output diretories for separate modules
@@ -48,3 +48,6 @@ modules/PREPARE_TANDEM_PAS/configs/test_config.yml
 modules/PREPROCESSING/configs/test_config.yml
 modules/QUANTIFICATION/configs/test_config.yml
 modules/REPORT_RESULTS/configs/test_config.yml
+
+# test dataset from zenodo
+MAPP_test_data
