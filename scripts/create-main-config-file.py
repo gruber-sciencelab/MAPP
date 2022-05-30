@@ -512,7 +512,7 @@ MAE_sorting_strategy: "{template["sorting_strategy"]}"
 ### module: KAPAC
 KPC_scripts_dir: "{template["MAPP_directory"]}/modules/KAPAC/scripts"
 KPC_outdir: "{template["MAPP_directory"]}/modules/KAPAC/{default_output_dir_name}"
-KPC_tandem_polyA_sites: "{template["MAPP_directory"]}/modules/PAQR/{default_output_dir_name}/tandem_pas_expression_normalized_pseudocount.tsv"
+KPC_tandem_polyA_sites: "{template["MAPP_directory"]}/modules/PAQR/{default_output_dir_name}/filtered_pas_expression.tsv"
 KPC_design_file: "{updated_design_table}"
 KPC_sitecount_matrices:
 {KPC_windows_pas}
