@@ -40,17 +40,17 @@ rule PAQ_all:
     Gathering all output
     """
     input:
-        TSV_filtered_expression_original = expand(
+        TSV_filtered_expression = expand(
             os.path.join(
                 "{PAQ_output_dir}",
-                "tandem_pas_expression_normalized_original.tsv"
+                "filtered_pas_expression.tsv"
             ),
             PAQ_output_dir = config["PAQ_outdir"]
         ),
-        TSV_filtered_pas_positions_pseudocount = expand(
+        TSV_filtered_positions = expand(
             os.path.join(
                 "{PAQ_output_dir}",
-                "tandem_pas_expression_normalized_pseudocount.tsv"
+                "filtered_pas_positions.tsv"
             ),
             PAQ_output_dir = config["PAQ_outdir"]
         )
@@ -384,12 +384,6 @@ rule PAQ_normalize_expression:
             "{PAQ_output_dir}",
             "singular_pas_expression.tsv"
         ),
-        # dummy link to make sure that relative positions are calculated
-        # even if this module is plugged into MAPP:
-        TSV_relative_pas_positions = os.path.join(
-            "{PAQ_output_dir}",
-            "relative_pas_positions.tsv"
-        ),
         SCRIPT_ = os.path.join(
             config["PAQ_scripts_dir"],
             "normalize-pas-expression.py"
@@ -448,5 +442,82 @@ rule PAQ_normalize_expression:
         --expression-pseudocount {params.FLOAT_expression_pseudocount} \
         --normalized-tandem-pas-expression-original {output.TSV_normalized_expression_original} \
         --normalized-tandem-pas-expression-pseudocount {output.TSV_normalized_expression_pseudocount} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
+        """
+
+##############################################################################
+###  Filter pas based on expression
+##############################################################################
+
+rule PAQ_filter_on_expression:
+    """
+    Filter summary table: remove all exons for which any site was
+    not expressed in all samples; keep tandem pas per terminal exon
+    """
+    input:
+        TSV_normalized_expression_original = os.path.join(
+            "{PAQ_output_dir}",
+            "tandem_pas_expression_normalized_original.tsv"
+        ),
+        TSV_relative_pas_positions = os.path.join(
+            "{PAQ_output_dir}",
+            "relative_pas_positions.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["PAQ_scripts_dir"],
+            "filter-tables.py"
+        )
+
+    output:
+        TSV_filtered_expression = os.path.join(
+            "{PAQ_output_dir}",
+            "filtered_pas_expression.tsv"
+        ),
+        TSV_filtered_positions = os.path.join(
+            "{PAQ_output_dir}",
+            "filtered_pas_positions.tsv"
+        )
+
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PAQ_output_dir}",
+            "cluster_log",
+            "PAQ_filter_on_expression.log"
+        )
+
+    threads: 1
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_filter_on_expression.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_filter_on_expression.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_filter_on_expression.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --normalized-expression {input.TSV_normalized_expression_original} \
+        --pas-positions {input.TSV_relative_pas_positions} \
+        --filtered-expression {output.TSV_filtered_expression} \
+        --filtered-positions {output.TSV_filtered_positions} \
         1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
         """
