@@ -257,6 +257,8 @@ rule ASE_filter_events:
         INT_region_size_3ss_down = config["ASE_3ss_region_down"],
         INT_region_size_5ss_up = config["ASE_5ss_region_up"],
         INT_region_size_5ss_down = config["ASE_5ss_region_down"],
+        INT_min_exon_len = config["ASE_min_exon_len"],
+        INT_max_exon_len = config["ASE_max_exon_len"],
         LOG_filtering_log = os.path.join(
             "{ASE_output_dir}",
             "events_SE_filtering.log"
@@ -304,6 +306,8 @@ rule ASE_filter_events:
         --region_size_3ss_down {params.INT_region_size_3ss_down} \
         --region_size_5ss_up {params.INT_region_size_5ss_up} \
         --region_size_5ss_down {params.INT_region_size_5ss_down} \
+        --min_exon_len {params.INT_min_exon_len} \
+        --max_exon_len {params.INT_max_exon_len} \
         --biotype_filters {params.STR_transcript_biotypes} \
         --fai {input.FAI_genome_index} \
         --filtering-logfile {params.LOG_filtering_log} \

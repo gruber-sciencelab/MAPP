@@ -135,6 +135,10 @@ RNASeQC_max_rRNA_rate: 0.05
 # (necessary for some cluster systems)
 storage_efficient: False
 
+# Minimal and maximal cassette exon length filters
+min_exon_len: 100
+max_exon_len: 1000000
+
 # Parameters defining ranges around 3ss, 5ss, PAS
 3ss_region_up: 50
 3ss_region_down: 50
