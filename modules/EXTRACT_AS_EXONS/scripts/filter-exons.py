@@ -84,6 +84,18 @@ def parse_arguments():
         help="Size of the region downstream 5' splicing site.",
     )
     parser.add_argument(
+        "--min_exon_len",
+        dest="min_exon_len",
+        required=True,
+        help="Minimal exon length filter.",
+    )
+    parser.add_argument(
+        "--max_exon_len",
+        dest="max_exon_len",
+        required=True,
+        help="Maximal exon length filter.",
+    )
+    parser.add_argument(
         "--fai",
         dest="fai",
         required=True,
@@ -166,52 +178,28 @@ def main():
         df_gtf["len"] = df_gtf["end"] - df_gtf["start"]
         df_gtf = df_gtf[
             df_gtf["len"]
-            > max(int(options.region_size_3ss_down), int(options.region_size_5ss_up))
+            > int(options.min_exon_len)
         ].copy()
         log.write(
             str(df_gtf.shape[0])
-            + "\tlength > max(3ss_down,5ss_up) so that 3/5 exonic regions do not overlap with intronic sites"
+            + "\tlength > min length parameter"
             + os.linesep
         )
 
-        # filter on chrom beg:
+        # filter on maximal length
+        df_gtf["len"] = df_gtf["end"] - df_gtf["start"]
         df_gtf = df_gtf[
-            df_gtf["start"] - int(options.region_size_3ss_up) > 0
-        ].copy()  # for exons on + strand
+            df_gtf["len"]
+            < int(options.max_exon_len)
+        ].copy()
         log.write(
             str(df_gtf.shape[0])
-            + "\tmore than 3ss_up_region_size nucleotides down-stream chromosome start"
-            + os.linesep
-        )
-        df_gtf = df_gtf[
-            df_gtf["start"] - int(options.region_size_5ss_down) > 0
-        ].copy()  # for exons on - strand
-        log.write(
-            str(df_gtf.shape[0])
-            + "\tmore than 5ss_down_region_size nucleotides down-stream chromosome start"
-            + os.linesep
-        )
-
-        # filter on chrom end:
-        index_list = []
-        for i, row in df_gtf.iterrows():  # indices are meaningless but unique
-            # watch out for +/- strand!
-            if (
-                chrom_len_dict[row.seqname]
-                > row.end + int(options.region_size_5ss_down)
-            ) and (
-                chrom_len_dict[row.seqname] > row.end + int(options.region_size_3ss_up)
-            ):
-                index_list.append(i)
-        df_gtf = df_gtf[df_gtf.index.isin(index_list)].copy()
-        log.write(
-            str(df_gtf.shape[0])
-            + "\tmore than 5ss_down_region_size and 3ss_up_region_size nucleotides up-stream chromosome end"
+            + "\tlength < max length parameter"
             + os.linesep
         )
 
         # intersect SUPPA events with this exon list
-        df_exons[df_exons["ID"].isin(list(df_gtf["name"]))].copy()
+        df_exons = df_exons[df_exons["ID"].isin(list(df_gtf["name"]))].copy()
         del df_exons["ID"]
         # retain the sorting from SUPPA ioe output file
         # IMPORTANT!

@@ -32,6 +32,10 @@ ASE_3ss_region_down: "50"
 ASE_5ss_region_up: "50"
 ASE_5ss_region_down: "150"
 
+# minimal and maximal cassette exon length filters
+ASE_min_exon_len: "100"
+ASE_max_exon_len: "1000000"
+
 # transcript biotype filters for the GTF annotation
 ASE_transcript_biotypes: "protein_coding"
 

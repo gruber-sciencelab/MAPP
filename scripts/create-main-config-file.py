@@ -422,6 +422,8 @@ ASE_3ss_region_up: {template["3ss_region_up"]}
 ASE_3ss_region_down: {template["3ss_region_down"]}
 ASE_5ss_region_up: {template["5ss_region_up"]}
 ASE_5ss_region_down: {template["5ss_region_down"]}
+ASE_min_exon_len: {template["min_exon_len"]}
+ASE_max_exon_len: {template["max_exon_len"]}
 ASE_transcript_biotypes: "{template["transcript_biotypes"]}"
 ASE_clustering_max_distance: {template["exon_clustering_max_coverage_distance"]}
 
