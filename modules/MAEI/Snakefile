@@ -32,10 +32,12 @@ rule MAE_all:
             os.path.join(
                 "{MAE_output_dir}",
                 "{region}",
-                "collapsed_results.tsv"
+                "{region}_collapsed_results.tsv"
             ),
             MAE_output_dir = config["MAE_outdir"],
-            region = config["MAE_sitecount_matrices"].keys()
+            # remember to handle "pas" sites with KAPAC not MAEI module:
+            region = filter(lambda x: (x != "pas"), \
+                config["MAE_sitecount_matrices"].keys())
         )
 
 ##############################################################################
@@ -480,7 +482,7 @@ rule MAE_collapse_results_for_region:
         TSV_collapsed_results_per_region = os.path.join(
             "{MAE_output_dir}",
             "{region}",
-            "collapsed_results.tsv"
+            "{region}_collapsed_results.tsv"
         )
 
     params:

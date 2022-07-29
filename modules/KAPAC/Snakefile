@@ -32,7 +32,7 @@ rule KPC_all:
             os.path.join(
                 "{KPC_output_dir}",
                 "model_results",
-                "collapsed_results.tsv"
+                "pas_collapsed_results.tsv"
             ),
             KPC_output_dir = config["KPC_outdir"]
         )
@@ -544,7 +544,7 @@ rule KPC_collapse_results:
         TSV_collapsed_results = os.path.join(
             "{KPC_output_dir}",
             "model_results",
-            "collapsed_results.tsv"
+            "pas_collapsed_results.tsv"
         )
 
     params:
