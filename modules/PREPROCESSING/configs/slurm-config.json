@@ -71,7 +71,7 @@
         "mem": "20G"
     },
 
-    "PQA_index_aligned_reads":
+    "PQA_index_sorted_aligned_reads":
     {
         "time": "01:00:00",
         "cpus-per-task": "{threads}",
