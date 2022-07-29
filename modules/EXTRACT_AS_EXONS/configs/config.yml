@@ -26,12 +26,6 @@ ASE_genomic_annotation: ""
 # path to the genomic sequence in fasta format
 ASE_genomic_sequence: ""
 
-# regions of interest around the splice sites
-ASE_3ss_region_up: "150"
-ASE_3ss_region_down: "50"
-ASE_5ss_region_up: "50"
-ASE_5ss_region_down: "150"
-
 # minimal and maximal cassette exon length filters
 ASE_min_exon_len: "100"
 ASE_max_exon_len: "1000000"

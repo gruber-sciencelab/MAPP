@@ -418,10 +418,6 @@ ASE_scripts_dir: "{template["MAPP_directory"]}/modules/EXTRACT_AS_EXONS/scripts"
 ASE_outdir: "{template["MAPP_directory"]}/modules/EXTRACT_AS_EXONS/{default_output_dir_name}"
 ASE_genomic_annotation: "{template["genomic_annotation"]}"
 ASE_genomic_sequence: "{template["genomic_sequence"]}"
-ASE_3ss_region_up: {template["3ss_region_up"]}
-ASE_3ss_region_down: {template["3ss_region_down"]}
-ASE_5ss_region_up: {template["5ss_region_up"]}
-ASE_5ss_region_down: {template["5ss_region_down"]}
 ASE_min_exon_len: {template["min_exon_len"]}
 ASE_max_exon_len: {template["max_exon_len"]}
 ASE_transcript_biotypes: "{template["transcript_biotypes"]}"
@@ -530,9 +526,9 @@ KPC_sorting_strategy: "{template["sorting_strategy"]}"
 ### module: REPORT_RESULTS
 RES_scripts_dir: "{template["MAPP_directory"]}/modules/REPORT_RESULTS/scripts"
 RES_outdir: "{template["MAPP_directory"]}/modules/REPORT_RESULTS/{default_output_dir_name}"
-RES_splicing_results_table_3ss: "{template["MAPP_directory"]}/modules/MAEI/{default_output_dir_name}/3ss/collapsed_results.tsv"
-RES_splicing_results_table_5ss: "{template["MAPP_directory"]}/modules/MAEI/{default_output_dir_name}/5ss/collapsed_results.tsv"
-RES_polyadenylation_results_table: "{template["MAPP_directory"]}/modules/KAPAC/{default_output_dir_name}/model_results/collapsed_results.tsv"
+RES_splicing_results_table_3ss: "{template["MAPP_directory"]}/modules/MAEI/{default_output_dir_name}/3ss/3ss_collapsed_results.tsv"
+RES_splicing_results_table_5ss: "{template["MAPP_directory"]}/modules/MAEI/{default_output_dir_name}/5ss/5ss_collapsed_results.tsv"
+RES_polyadenylation_results_table: "{template["MAPP_directory"]}/modules/KAPAC/{default_output_dir_name}/model_results/pas_collapsed_results.tsv"
 RES_design_file: "{updated_design_table}"
 RES_max_pval: {template["max_pval"]}
 RES_sorting_strategy: "{template["sorting_strategy"]}"

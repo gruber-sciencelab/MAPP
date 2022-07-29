@@ -60,30 +60,6 @@ def parse_arguments():
         "--out", dest="output", required=True, help="Path for the output file."
     )
     parser.add_argument(
-        "--region_size_3ss_up",
-        dest="region_size_3ss_up",
-        required=True,
-        help="Size of the region upstream 3' splicing site.",
-    )
-    parser.add_argument(
-        "--region_size_3ss_down",
-        dest="region_size_3ss_down",
-        required=True,
-        help="Size of the region downstream 3' splicing site.",
-    )
-    parser.add_argument(
-        "--region_size_5ss_up",
-        dest="region_size_5ss_up",
-        required=True,
-        help="Size of the region upstream 5' splicing site.",
-    )
-    parser.add_argument(
-        "--region_size_5ss_down",
-        dest="region_size_5ss_down",
-        required=True,
-        help="Size of the region downstream 5' splicing site.",
-    )
-    parser.add_argument(
         "--min_exon_len",
         dest="min_exon_len",
         required=True,
