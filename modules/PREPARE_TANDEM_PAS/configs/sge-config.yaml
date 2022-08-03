@@ -1,0 +1,25 @@
+__default__:
+  time: "00:01:00"
+  mem: "1000"
+  error: "{params.LOG_cluster_log}"
+  output: "/dev/null"
+
+TPA_select_tandem_pas:
+  time: "02:00:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+TPA_select_terminal_exon_pas:
+  time: "00:10:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+TPA_filter_on_ambiguous_annotation:
+  time: "04:00:00"
+  mem: "20000"
+  pe: "mpi 1"
+
+TPA_extract_representative_sites_coord:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"

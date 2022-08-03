@@ -1,0 +1,40 @@
+__default__:
+  time: "00:01:00"
+  mem: "1000"
+  error: "{params.LOG_cluster_log}"
+  output: "/dev/null"
+
+KPC_create_polyA_site_to_exon_mapping:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+KPC_tag_overlapping_polyA_sites:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+KPC_select_pas_expression_columns:
+  time: "00:05:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+KPC_run_KAPAC_model:
+  time: "06:00:00"
+  mem: "50000"
+  pe: "mpi 1"
+
+KPC_extend_result_tables:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+KPC_calculate_Zscores_statistical_significancy:
+  time: "00:05:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+KPC_collapse_results:
+  time: "00:05:00"
+  mem: "5000"
+  pe: "mpi 1"

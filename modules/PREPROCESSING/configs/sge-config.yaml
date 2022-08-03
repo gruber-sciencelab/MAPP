@@ -1,0 +1,95 @@
+__default__:
+  time: "00:01:00"
+  mem: "1000"
+  error: "{params.LOG_cluster_log}"
+  output: "/dev/null"
+
+PQA_create_genome_index:
+  time: "02:00:00"
+  mem: "8000"
+  pe: "mpi 8"
+
+PQA_prepare_adapters_textfiles:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+PQA_run_FastQC:
+  time: "01:00:00"
+  mem: "4000"
+  pe: "mpi 4"
+
+PQA_remove_adapters_pe:
+  time: "02:00:00"
+  mem: "4000"
+  pe: "mpi 8"
+
+PQA_remove_adapters_se:
+  time: "02:00:00"
+  mem: "4000"
+  pe: "mpi 8"
+
+PQA_remove_polyA_polyT_tails_pe:
+  time: "02:00:00"
+  mem: "4000"
+  pe: "mpi 8"
+
+PQA_remove_polyA_polyT_tails_se:
+  time: "02:00:00"
+  mem: "4000"
+  pe: "mpi 8"
+
+PQA_align_reads:
+  time: "23:59:59"
+  mem: "8000"
+  pe: "mpi 8"
+
+PQA_sort_aligned_reads:
+  time: "01:00:00"
+  mem: "4000"
+  pe: "mpi 8"
+
+PQA_index_aligned_reads:
+  time: "01:00:00"
+  mem: "4000"
+  pe: "mpi 8"
+
+PQA_collapse_genomic_annotation:
+  time: "00:10:00"
+  mem: "10000"
+  pe: "mpi 1"
+
+PQA_mapping_quality_analysis:
+  time: "01:00:00"
+  mem: "10000"
+  pe: "mpi 1"
+
+PQA_merge_mapping_quality_tables:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+PQA_extract_transcripts_as_bed12:
+  time: "01:00:00"
+  mem: "10000"
+  pe: "mpi 1"
+
+PQA_calculate_TIN_scores:
+  time: "02:00:00"
+  mem: "4000"
+  pe: "mpi 8"
+
+PQA_merge_TIN_scores:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+PQA_calculate_median_TIN_score:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+PQA_filter_design_table:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"

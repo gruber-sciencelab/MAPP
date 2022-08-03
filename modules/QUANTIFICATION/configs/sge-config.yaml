@@ -1,0 +1,30 @@
+__default__:
+  time: "00:01:00"
+  mem: "1000"
+  error: "{params.LOG_cluster_log}"
+  output: "/dev/null"
+
+QEI_extract_transcriptome:
+  time: "00:10:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+QEI_quantify_expression:
+  time: "02:00:00"
+  mem: "2000"
+  pe: "mpi 8"
+
+QEI_merge_expression_values:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+QEI_filter_expression_tables:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+QEI_calculate_exon_inclusion_scores:
+  time: "00:30:00"
+  mem: "1000"
+  pe: "mpi 1"

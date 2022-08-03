@@ -1,0 +1,40 @@
+__default__:
+  time: "00:01:00"
+  mem: "1000"
+  error: "{params.LOG_cluster_log}"
+  output: "/dev/null"
+
+ASE_build_genome_index:
+  time: "00:30:00"
+  mem: "20000"
+  pe: "mpi 1"
+
+ASE_generate_skipped_exon_events:
+  time: "00:10:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+ASE_filter_events:
+  time: "00:30:00"
+  mem: "10000"
+  pe: "mpi 1"
+
+ASE_cluster_events:
+  time: "04:00:00"
+  mem: "20000"
+  pe: "mpi 1"
+
+ASE_select_representative_events:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+ASE_format_events_into_bed:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+ASE_extract_splice_sites_coordinates:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"

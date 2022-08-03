@@ -1,0 +1,40 @@
+__default__:
+  time: "00:01:00"
+  mem: "1000"
+  error: "{params.LOG_cluster_log}"
+  output: "/dev/null"
+
+CSM_extract_window_coord_and_sequence:
+  time: "00:30:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+CSM_create_kmer_sitecount_matrices:
+  time: "01:00:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+CSM_prepare_MotEvo_parameters:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+CSM_prepare_sequences_for_MotEvo:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+CSM_MotEvo_analysis:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+CSM_create_MotEvo_sitecount_matrices:
+  time: "00:30:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+CSM_create_links_to_matrices:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
