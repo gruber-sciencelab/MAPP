@@ -1,6 +1,6 @@
 snakefile: "../Snakefile"
 local-cores: 1
-cores: 256
+cores: 1
 printshellcmds: true
 rerun-incomplete: true
 use-singularity: true

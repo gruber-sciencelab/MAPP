@@ -6,8 +6,8 @@ rerun-incomplete: true
 use-conda: true
 conda-frontend: mamba
 keep-going: true
-jobscript: "slurm-jobscript.sh"
-cluster: "slurm-submit.py"
-cluster-status: "slurm-status.py"
+jobscript: sge-jobscript.sh
+cluster: "sge-submit.py"
+cluster-status: "sge-status.py"
 latency-wait: 120
 jobs: 256
