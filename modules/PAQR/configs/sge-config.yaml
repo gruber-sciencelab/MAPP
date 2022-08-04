@@ -1,0 +1,30 @@
+__default__:
+  time: "00:01:00"
+  mem: "1000"
+  error: "{params.LOG_cluster_log}"
+  output: "/dev/null"
+
+PAQ_create_coverages:
+  time: "04:00:00"
+  mem: "4000"
+  pe: "mpi 8"
+
+PAQ_infer_relative_usage:
+  time: "04:00:00"
+  mem: "4000"
+  pe: "mpi 8"
+
+PAQ_relative_pas_positions:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+PAQ_normalize_expression:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+PAQ_filter_on_expression:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"

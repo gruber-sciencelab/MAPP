@@ -44,10 +44,11 @@ if printf '%s\n' "$@" | grep -q '^--help$'; then
     echo "  -c/--configfile {XXX}"
     echo "  Path to the snakemake config file."
     echo ""
-    echo "  -e/--environment {local/slurm} (REQUIRED)"
+    echo "  -e/--environment {local/slurm/sge} (REQUIRED)"
     echo "  Environment to execute the workflow in:"
     echo "  * local = execution on the local machine."
     echo "  * slurm = slurm cluster support."
+    echo "  * sge = (sun) grid engine cluster support."
     echo ""
     echo "  -t/--technology {conda/singularity} (REQUIRED)"
     echo "  Technology for reproducible research:"
@@ -158,8 +159,8 @@ if [ -z "$ENV" ]; then
     echo "Invalid arguments. Please provide --environment"
     exit 1
 fi
-if [ "$ENV" != "local" ] && [ "$ENV" != "slurm" ]; then
-    echo "Invalid arguments. --environment = {local/slurm}"
+if [ "$ENV" != "local" ] && [ "$ENV" != "slurm" ] && [ "$ENV" != "sge" ]; then
+    echo "Invalid arguments. --environment = {local/slurm/sge}"
     exit 1
 fi
 if [ -z "$TECH" ]; then
@@ -194,5 +195,13 @@ case "$ENV$TECH" in
             --configfile="$CONFIGFILE" \
             --profile="../profiles/slurm-singularity" \
             --singularity-args "--no-home --bind ${PWD}/..,$BINDPATHS"
+        ;;
+    sgeconda)
+        snakemake \
+            --configfile="$CONFIGFILE" \
+            --profile="../profiles/sge-conda"
+        ;;
+    sgesingularity)
+        echo "Singularity technology is not supported for Grid Engine yet."
         ;;
 esac

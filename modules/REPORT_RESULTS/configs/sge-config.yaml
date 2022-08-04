@@ -1,0 +1,25 @@
+__default__:
+  time: "00:01:00"
+  mem: "1000"
+  error: "{params.LOG_cluster_log}"
+  output: "/dev/null"
+
+RES_annotate_statistical_significance:
+  time: "00:05:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+RES_select_motifs:
+  time: "00:05:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+RES_prepare_Zscores_tables:
+  time: "00:30:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+RES_plot_Zscores_heatmaps:
+  time: "04:00:00"
+  mem: "20000"
+  pe: "mpi 1"

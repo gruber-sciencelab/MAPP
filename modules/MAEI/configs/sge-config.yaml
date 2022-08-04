@@ -1,0 +1,35 @@
+__default__:
+  time: "00:01:00"
+  mem: "1000"
+  error: "{params.LOG_cluster_log}"
+  output: "/dev/null"
+
+MAE_prepare_inclusion_table:
+  time: "00:05:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+MAE_fit_model_parameters:
+  time: "06:00:00"
+  mem: "20000"
+  pe: "mpi 1"
+
+MAE_calculate_Zscores:
+  time: "00:05:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+MAE_extend_result_tables:
+  time: "00:05:00"
+  mem: "1000"
+  pe: "mpi 1"
+
+MAE_calculate_Zscores_statistical_significancy:
+  time: "00:30:00"
+  mem: "5000"
+  pe: "mpi 1"
+
+MAE_collapse_results_for_region:
+  time: "00:05:00"
+  mem: "5000"
+  pe: "mpi 1"

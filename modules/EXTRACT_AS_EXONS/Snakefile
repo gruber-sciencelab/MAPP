@@ -253,10 +253,6 @@ rule ASE_filter_events:
     params:
         GTF_annotation = config["ASE_genomic_annotation"],
         STR_transcript_biotypes = config["ASE_transcript_biotypes"],
-        INT_region_size_3ss_up = config["ASE_3ss_region_up"],
-        INT_region_size_3ss_down = config["ASE_3ss_region_down"],
-        INT_region_size_5ss_up = config["ASE_5ss_region_up"],
-        INT_region_size_5ss_down = config["ASE_5ss_region_down"],
         INT_min_exon_len = config["ASE_min_exon_len"],
         INT_max_exon_len = config["ASE_max_exon_len"],
         LOG_filtering_log = os.path.join(
@@ -302,10 +298,6 @@ rule ASE_filter_events:
         --in {input.IOE_skipped_exon_events} \
         --gtf {params.GTF_annotation} \
         --out {output.TSV_filtered_SE_events} \
-        --region_size_3ss_up {params.INT_region_size_3ss_up} \
-        --region_size_3ss_down {params.INT_region_size_3ss_down} \
-        --region_size_5ss_up {params.INT_region_size_5ss_up} \
-        --region_size_5ss_down {params.INT_region_size_5ss_down} \
         --min_exon_len {params.INT_min_exon_len} \
         --max_exon_len {params.INT_max_exon_len} \
         --biotype_filters {params.STR_transcript_biotypes} \

@@ -41,7 +41,7 @@ if [ -z "$CORES" ]; then
 fi
 
 echo "### Downloading test dataset ###"
-wget https://zenodo.org/record/5772967/files/MAPP_test_data.tar.gz
+wget https://zenodo.org/record/6941629/files/MAPP_test_data.tar.gz
 
 echo "### Extracting test dataset ###"
 tar -xzf MAPP_test_data.tar.gz

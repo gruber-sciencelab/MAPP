@@ -26,12 +26,6 @@ ASE_genomic_annotation: "/home/runner/work/MAPP/MAPP/.test/integration/module_PQ
 # path to the genomic sequence in fasta format
 ASE_genomic_sequence: "/home/runner/work/MAPP/MAPP/.test/integration/module_PQA/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 
-# regions of interest around the splice sites
-ASE_3ss_region_up: "50"
-ASE_3ss_region_down: "50"
-ASE_5ss_region_up: "50"
-ASE_5ss_region_down: "50"
-
 # minimal and maximal cassette exon length filters
 ASE_min_exon_len: "100"
 ASE_max_exon_len: "1000000"
