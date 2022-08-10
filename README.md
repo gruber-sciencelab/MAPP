@@ -191,10 +191,10 @@ bash execution/run.sh \
   -t conda \
   -g dag DAG.svg
 
-# run MAPP on a SLURM-managed cluster with Conda technology with 64 cores
+# run MAPP on a {SLURM|SGE}-managed cluster with Conda technology with 64 cores
 bash execution/run.sh \
   -c configs/config.yml \
-  -e slurm \
+  -e {slurm|sge} \
   -t conda \
   -n 64
 
