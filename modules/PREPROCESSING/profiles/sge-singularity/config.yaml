@@ -5,7 +5,6 @@ printshellcmds: true
 rerun-incomplete: true
 use-singularity: true
 keep-going: true
-verbose: true
 jobscript: sge-jobscript.sh
 cluster: "sge-submit.py"
 cluster-status: "sge-status.py"
