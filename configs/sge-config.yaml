@@ -40,7 +40,7 @@ PQA_remove_polyA_polyT_tails_se:
   pe: "mpi 8"
 
 PQA_align_reads:
-  time: "23:59:59"
+  time: "04:00:00"
   mem: "8000"
   pe: "mpi 8"
 
