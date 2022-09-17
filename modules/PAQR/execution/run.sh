@@ -58,6 +58,7 @@ if printf '%s\n' "$@" | grep -q '^--help$'; then
     echo "  -b/--bind {XXX,YYY} (OPTIONAL)"
     echo "  For workflow execution in a cluster env. with singularity tech:"
     echo "  additional ABSOLUTE paths that need to be accessible from the containers."
+    echo "  (\$HOME directory is mounted by default)"
     echo ""
     echo "  -g/--graph {rulegraph/dag} {XXX} (OPTIONAL)"
     echo "  Do not call the execution."
@@ -183,7 +184,7 @@ case "$ENV$TECH" in
         snakemake \
             --configfile="$CONFIGFILE" \
             --profile="../profiles/local-singularity" \
-            --singularity-args "--no-home --bind ${PWD}/..,$BINDPATHS"
+            --singularity-args "--bind ${PWD}/..,$BINDPATHS"
         ;;
     slurmconda)
         snakemake \
@@ -194,7 +195,7 @@ case "$ENV$TECH" in
         snakemake \
             --configfile="$CONFIGFILE" \
             --profile="../profiles/slurm-singularity" \
-            --singularity-args "--no-home --bind ${PWD}/..,$BINDPATHS"
+            --singularity-args "--bind ${PWD}/..,$BINDPATHS"
         ;;
     sgeconda)
         snakemake \
