@@ -46,6 +46,8 @@ for i in range(STATUS_ATTEMPTS):
         else:
             time.sleep(1)
 
+# cluster delay in job handling requires a short nap time
+time.sleep(1)
 status = res[jobid]
 
 if status == "BOOT_FAIL":

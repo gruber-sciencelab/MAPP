@@ -18,6 +18,9 @@ import time
 import logging
 import logging.handlers
 from argparse import ArgumentParser, RawTextHelpFormatter
+import sys
+import os
+from datetime import datetime
 import numpy as np
 import pandas as pd
 
@@ -138,6 +141,7 @@ def main():
             samples_to_remove.append(sample_ID)
 
     # filter the design table
+    now = datetime.now()
     samples_to_remove = list(set(samples_to_remove))
     samples_to_keep = [
         s for s in design_table_in.index.values if s not in samples_to_remove
@@ -145,10 +149,16 @@ def main():
     design_table_out = design_table_in.loc[samples_to_keep].copy()
     design_table_out.to_csv(options.output, sep="\t")
 
+    # print warnings to standard error stream
+    datetime_string = now.strftime("%d/%b/%Y %H:%M:%S")
+    for s in samples_to_remove:
+        sys.stderr.write("[" + datetime_string + "] WARNING - ")
+        sys.stderr.write("Sample: " + s + " has been removed due to low quality." + os.linesep)
+
     # the filtered table is already saved, now check if there are any samples left after qc
     # if not: raise exception to shutdown the whole pipeline (keeping the output file)
     if len(samples_to_keep) < 2:
-        errmsg = "Less than two samples passed the quality control step. Further processing is not possible"
+        errmsg = "Less than two samples passed the quality control step. Further processing is not possible."
         raise RuntimeWarning(errmsg)
 
 

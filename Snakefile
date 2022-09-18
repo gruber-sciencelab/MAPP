@@ -149,7 +149,7 @@ rule MAPP_collect_summary:
             {params.BED_pas_list} \
             {output.DIR_pipeline_summary}/results/coordinates-pas.bed
         cp \
-            {params.DIR_PAQ_module_outdir}/tandem_pas_expression_normalized_pseudocount.tsv \
+            {params.DIR_PAQ_module_outdir}/filtered_pas_expression.tsv \
             {output.DIR_pipeline_summary}/results/pas-expression-table.tsv
         cp \
             {params.DIR_PAQ_module_outdir}/relative_pas_positions.tsv \

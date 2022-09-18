@@ -59,7 +59,7 @@
 
     "PQA_align_reads":
     {
-        "time": "23:59:59",
+        "time": "04:00:00",
         "cpus-per-task": "{threads}",
         "mem": "100G"
     },

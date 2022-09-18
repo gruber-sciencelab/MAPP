@@ -5,4 +5,3 @@ rerun-incomplete: true
 use-conda: true
 conda-frontend: conda
 keep-going: true
-verbose: true

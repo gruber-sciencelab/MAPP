@@ -4,9 +4,8 @@ cores: 1
 printshellcmds: true
 rerun-incomplete: true
 use-conda: true
-conda-frontend: conda
+conda-frontend: mamba
 keep-going: true
-verbose: true
 jobscript: sge-jobscript.sh
 cluster: "sge-submit.py"
 cluster-status: "sge-status.py"

@@ -38,14 +38,14 @@ MAPP is implemented as a modular bioinformatics pipeline assembled in the [Snake
 
 Snakemake is a workflow management system that helps to create and execute data processing pipelines. It requires Python 3 and can be most easily installed via the _bioconda_ channel from the anaconda cloud service. In order to simplify the installation process for the users we have prepared a recipe for a [Conda](https://docs.conda.io/en/latest/) environment which contains all the software necessary to execute our workflow. To resolve dependencies efficiently MAPP additionally requires [Mamba](https://github.com/mamba-org/mamba) package manager. As such, these two should be considered as strict requirements. For instructions on how to install Conda and Mamba please see [Appendix A](#appendix-a-download-and-installation-of-miniconda3-and-mamba).
 
-MAPP installation is therefore automatised and limitted to downloading the following repository (also possible with `git clone` command, provided Git version control system is available), navigating to the MAPP directory and running a shell script which will build the environment for the workflow. This may be achieved by the following command: `bash scripts/create-conda-environment.sh`
+MAPP installation is therefore automatised and limitted to downloading the following repository (also possible with `git clone` command, provided Git version control system is available), navigating to the MAPP directory and running a shell script which will build the environment for the workflow. This may be achieved by the following command: `bash scripts/create-conda-environment.sh`.
 
 We have also prepared a minimal dataset in order to test the correct execution of MAPP on a local machine (more information below).
 
 **Currently MAPP supports machines with a Linux operating system.**
 
 ## Execution test
-In order to facilitate testing MAPP we have prepared [a small test set of input data](https://doi.org/10.5281/zenodo.5566676) as well as a bash script which will download it and handle all of the below-described analysis setup automatically. The script will also trigger the workflow on the local machine with per-rule conda environments mechanism in place. The whole analysis should take below 48h to finish. To execute this test run you will need to navigate to the directory into which you have cloned our repository and type:
+In order to facilitate testing MAPP we have prepared [a small test set of input data](https://doi.org/10.5281/zenodo.5566676) as well as a bash script which will download it and handle all of the below-described analysis setup automatically. The script will also trigger the workflow on the local machine with per-rule conda environments mechanism in place. The whole analysis should take below 48h to finish, requires at least 15GB free disk space and 32GB RAM available. To execute this test run you will need to navigate to the directory into which you have cloned our repository and type:
 
 ```bash
 bash scripts/download-and-run-on-example-data.sh
@@ -56,6 +56,8 @@ Additionally, in order to speed up the test, this workflow run may be paralleliz
 ```bash
 bash scripts/download-and-run-on-example-data.sh --cores 8
 ```
+
+The above-mentioned test script creates a valid template file for MAPP configuration which may serve as help for further pipeline runs: `MAPP_test_data/config_template.yml`.
 
 ## Workflow execution
 
@@ -211,7 +213,8 @@ bash execution/run.sh \
 * The most important output of the whole workflow will be collected and summarized in a compressed directory: `summary.tar.gz` located inside the MAPP directory. All results are available in per-module output directories: `modules/*/output`. These folders also contain corresponding logs: both cluster submission info as well as per-job standard output and error streams. Logs of top-level snakemake rules will be stored under `logs` upon succesfull finish of the workflow.
 * In case the user would like to provide a custom set of PWMs - please do not use "|" character in the motifs' names. It is reserved.
 * Please note that in case Miniconda is not installed in the default `$HOME` directory of the user the path in `jobscript.sh` file for each of the Snakemake profiles might need to be modified.
-* In case of analysing very big datasets default resources specified in cluster configuration files (for example: `configs/slurm-config.json`) might need to be adjusted.
+* Resources specified in cluster configuration files (for example: `configs/slurm-config.json`, `configs/sge-config.yaml`) have been optimized to suffice for analysis of most publicly available datasets. Some of these might need minor adjustments in case of more extensive analyses. For local pipeline execution (no cluster support) please note that a machine with at least 32GB of RAM is advised.
+* Advenced users may turn specific modules of the pipeline off in order to utilise already available pre-computed resources for subsequent analyses (cassette exons set, sitecount matrices etc.) Special care needs to be taken to: (1) comment-out the inclusion of a specific module-related Snakefile in the main MAPP Snakefile, (2) provide proper paths to the pre-computed resources in the snakemake configuration file.
 
 ## Appendix A: Download and installation of Miniconda3 and Mamba
 

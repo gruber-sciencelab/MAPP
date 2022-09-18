@@ -4,4 +4,3 @@ printshellcmds: true
 rerun-incomplete: true
 use-singularity: true
 keep-going: true
-verbose: true
