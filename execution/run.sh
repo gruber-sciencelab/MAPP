@@ -73,6 +73,14 @@ if printf '%s\n' "$@" | grep -q '^--help$'; then
     echo "  -n/--cores {XXX} (OPTIONAL)"
     echo "  Number of local cores provided to the workflow."
     echo "  (Default: 1)"
+    echo ""
+    echo "  --conda-prefix {XXX} (OPTIONAL)"
+    echo "  Use pre-computed conda environments for the workflow."
+    echo "  (Default: create new environments in repository root)"
+    echo ""
+    echo "  --singularity-prefix {XXX} (OPTIONAL)"
+    echo "  Use pre-computed singularity containers for the workflow."
+    echo "  (Default: create new containers in repository root)"
     exit 0
 fi
 
@@ -116,6 +124,16 @@ do
             ;;
         -n|--cores)
             CORES="$2"
+            shift # past argument
+            shift # past value
+            ;;
+        --conda-prefix)
+            CONDAPREFIX="$2"
+            shift # past argument
+            shift # past value
+            ;;
+        --singularity-prefix)
+            SINGULARITYPREFIX="$2"
             shift # past argument
             shift # past value
             ;;
@@ -205,39 +223,54 @@ if [ "$TECH" != "conda" ] && [ "$TECH" != "singularity" ]; then
     exit 1
 fi
 
+# check for pre-computed conda environments
+if [ -z "$CONDAPREFIX" ]; then
+    CONDAPREFIX="${PWD}/../conda-environments"
+fi
+
+# check for pre-computed singularity containers
+if [ -z "$SINGULARITYPREFIX" ]; then
+    SINGULARITYPREFIX="${PWD}/../singularity-containers"
+fi
+
 # select a proper smk profile based on the command line args
 case "$ENV$TECH" in
     localconda)
         snakemake \
             --configfile="$CONFIGFILE" \
             --profile="../profiles/local-conda" \
-            --cores="$CORES"
+            --cores="$CORES" \
+            --conda-prefix="$CONDAPREFIX"
         ;;
     localsingularity)
         snakemake \
             --configfile="$CONFIGFILE" \
             --profile="../profiles/local-singularity" \
             --singularity-args "--bind ${PWD}/..,$BINDPATHS" \
-            --cores="$CORES"
+            --cores="$CORES" \
+            --singularity-prefix="$SINGULARITYPREFIX"
         ;;
     slurmconda)
         snakemake \
             --configfile="$CONFIGFILE" \
             --profile="../profiles/slurm-conda" \
-            --cores="$CORES"
+            --cores="$CORES" \
+            --conda-prefix="$CONDAPREFIX"
         ;;
     slurmsingularity)
         snakemake \
             --configfile="$CONFIGFILE" \
             --profile="../profiles/slurm-singularity" \
             --singularity-args "--bind ${PWD}/..,$BINDPATHS" \
-            --cores="$CORES"
+            --cores="$CORES" \
+            --singularity-prefix="$SINGULARITYPREFIX"
         ;;
     sgeconda)
         snakemake \
             --configfile="$CONFIGFILE" \
             --profile="../profiles/sge-conda" \
-            --cores="$CORES"
+            --cores="$CORES" \
+            --conda-prefix="$CONDAPREFIX"
         ;;
     sgesingularity)
         echo "Singularity technology is not supported for Grid Engine yet."
