@@ -8,3 +8,4 @@ jobscript: "slurm-jobscript.sh"
 cluster: "slurm-submit.py"
 cluster-status: "slurm-status.py"
 latency-wait: 120
+jobs: 4096
