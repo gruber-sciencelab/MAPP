@@ -202,7 +202,7 @@ fi
 
 # check for overwriting the default number of cores
 if [ -z "$CORES" ]; then
-    CORES=1
+    CORES="all"
 fi
 
 # if this is not a graph run - check other parameters

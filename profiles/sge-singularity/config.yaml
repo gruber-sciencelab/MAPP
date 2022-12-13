@@ -1,6 +1,5 @@
 snakefile: "../Snakefile"
 local-cores: 1
-cores: 1
 printshellcmds: true
 rerun-incomplete: true
 use-singularity: true
@@ -9,4 +8,4 @@ jobscript: sge-jobscript.sh
 cluster: "sge-submit.py"
 cluster-status: "sge-status.py"
 latency-wait: 120
-jobs: 256
+jobs: 4096
