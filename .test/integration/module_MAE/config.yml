@@ -44,6 +44,9 @@ MAE_min_motif_fraction: 0.8
 # alternatively spliced exon (in all samples)
 MAE_min_expression: 1.0
 
+# boolean flag to mark TPM expression averaging over samples
+MAE_average_expressions: False
+
 # sorting startegy for the output table with motif activities;
 # options: "avg" OR "max"
 MAE_sorting_strategy: "avg"

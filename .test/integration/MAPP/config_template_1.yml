@@ -241,6 +241,9 @@ pas_expression_pseudocount: 1
 # alternatively spliced exon (in all samples)
 min_transcript_expression: 1
 
+# MAEI parameter: mark TPM expression averaging over samples
+average_expressions: False
+
 # Minimal fraction of sequences which must contain a binding site / kmer
 # for a given motif in order for that motif to be considered (for a given window)
 min_motif_fraction: 0
