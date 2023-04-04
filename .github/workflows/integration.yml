@@ -38,8 +38,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
@@ -90,8 +93,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
@@ -143,8 +149,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
@@ -195,8 +204,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
@@ -247,8 +259,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
@@ -299,8 +314,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
@@ -379,8 +397,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
@@ -431,8 +452,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
@@ -483,8 +507,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
@@ -546,8 +573,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
@@ -631,8 +661,11 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
-          environment-file: env/environment.yml
+          miniforge-variant: Mambaforge
+          channels: conda-forge,defaults
+          channel-priority: true
           activate-environment: mapp
+          environment-file: env/environment.yml
           auto-activate-base: false
 
       - name: Add mamba for the CI
