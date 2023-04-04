@@ -134,7 +134,7 @@ double dLL_dc(double x, void *info) {
 
 // [[Rcpp::export]]
 List fit_model_parameters(NumericMatrix i, NumericMatrix t, NumericMatrix N,
-                          double t_crit) {
+                          NumericVector t_crit_arg, bool average_expressions) {
   // prepare data structures for the parameters and results, also other
   // variables NumericVector and NumericMatrix is always initialised with zero
   const int n_samples = i.ncol();
@@ -164,27 +164,52 @@ List fit_model_parameters(NumericMatrix i, NumericMatrix t, NumericMatrix N,
     }
   }
 
-  // calculate the shared t prefactor (including t_crit)
-  double temp_for_row_avg;
-  for (int e = 0; e < n_exons; e++) {
-    temp_for_row_avg = mean(t(e, _));
-    for (int s = 0; s < n_samples; s++) {
-      t_prefactor(e, s) = temp_for_row_avg / (temp_for_row_avg + t_crit);
-    }
-  }
+  // average TPM expressions over samples
+  if (average_expressions){
 
-  // ============================================================================
-  // calculate the C,X,R and R*t_prefactor
-  // the latter variables with t_prefactor have in fact t_prefactor*R (!)
-  double C = sum(t);
-  double X = sum(t_prefactor);
-  double R = C / X;
-  for (int e = 0; e < n_exons; e++) {
-    for (int s = 0; s < n_samples; s++) {
-      t_prefactor(e, s) = t_prefactor(e, s) * R;
+    double t_crit = t_crit_arg(0);
+
+    // calculate the shared t prefactor (including t_crit)
+    double temp_for_row_avg;
+    for (int e = 0; e < n_exons; e++) {
+      temp_for_row_avg = mean(t(e, _));
+      for (int s = 0; s < n_samples; s++) {
+        t_prefactor(e, s) = temp_for_row_avg / (temp_for_row_avg + t_crit);
+      }
+    }
+
+    // calculate the C,X,R and R*t_prefactor
+    // the latter variables with t_prefactor have in fact t_prefactor*R (!)
+    double C = sum(t);
+    double X = sum(t_prefactor);
+    double R = C / X;
+    for (int e = 0; e < n_exons; e++) {
+      for (int s = 0; s < n_samples; s++) {
+        t_prefactor(e, s) = t_prefactor(e, s) * R;
+      }
+    }
+
+  // operate on original per-sample TPM values
+  } else {
+
+    // calculate the shared t prefactor (including t_crit)
+    for (int e = 0; e < n_exons; e++) {
+      for (int s = 0; s < n_samples; s++) {
+        t_prefactor(e, s) = t(e, s) / (t(e, s) + t_crit_arg(s));
+      }
+    }
+
+    // calculate the C,X,R and R*t_prefactor
+    // the latter variables with t_prefactor have in fact t_prefactor*R (!)
+    NumericVector C = colSums(t);
+    NumericVector X = colSums(t_prefactor);
+    NumericVector R = C / X;
+    for (int e = 0; e < n_exons; e++) {
+      for (int s = 0; s < n_samples; s++) {
+        t_prefactor(e, s) = t_prefactor(e, s) * R(s);
+      }
     }
   }
-  // ============================================================================
 
   // calculate the shared term: f*t_prefactor (including R correction)
   for (int e = 0; e < n_exons; e++) {
