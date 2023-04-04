@@ -11,7 +11,7 @@
 #   AUTHOR: Maciej_Bak
 #   AFFILIATION: University_of_Basel
 #   AFFILIATION: Swiss_Institute_of_Bioinformatics
-#   CONTACT: maciej.bak@unibas.ch
+#   CONTACT: wsciekly.maciek@gmail.com
 #   CREATED: 13-10-2021
 #   LICENSE: Apache_2.0
 #

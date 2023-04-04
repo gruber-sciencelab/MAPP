@@ -5,7 +5,7 @@
 #   AUTHOR: Maciej_Bak
 #   AFFILIATION: University_of_Basel
 #   AFFILIATION: Swiss_Institute_of_Bioinformatics
-#   CONTACT: maciej.bak@unibas.ch
+#   CONTACT: wsciekly.maciek@gmail.com
 #   CREATED: 20-01-2020
 #   LICENSE: GPL_3.0
 #   LICENSE: https://www.gnu.org/licenses/gpl-3.0.html
