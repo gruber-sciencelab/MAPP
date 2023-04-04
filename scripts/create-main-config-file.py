@@ -7,7 +7,7 @@
 #   AUTHOR: Maciej_Bak
 #   AFFILIATION: University_of_Basel
 #   AFFILIATION: Swiss_Institute_of_Bioinformatics
-#   CONTACT: maciej.bak@unibas.ch
+#   CONTACT: wsciekly.maciek@gmail.com
 #   CREATED: 04-07-2020
 #   LICENSE: Apache_2.0
 #
@@ -505,6 +505,7 @@ MAE_sitecount_matrices:
 {MAE_windows_5ss}
 MAE_min_motif_fraction: {template["min_motif_fraction"]}
 MAE_min_expression: {template["min_transcript_expression"]}
+MAE_average_expressions: {template["average_expressions"]}
 MAE_sorting_strategy: "{template["sorting_strategy"]}"
 
 ### module: KAPAC

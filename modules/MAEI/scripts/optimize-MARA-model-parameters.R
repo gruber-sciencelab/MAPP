@@ -5,7 +5,7 @@
 #   AUTHOR: Maciej_Bak
 #   AFFILIATION: University_of_Basel
 #   AFFILIATION: Swiss_Institute_of_Bioinformatics
-#   CONTACT: maciej.bak@unibas.ch
+#   CONTACT: wsciekly.maciek@gmail.com
 #   CREATED: 20-01-2020
 #   LICENSE: GPL_3.0
 #   LICENSE: https://www.gnu.org/licenses/gpl-3.0.html
@@ -57,6 +57,13 @@ option_list <- list(
     default = 0.00,
     type = "double",
     help = "Minimal fraction of exons which need to bind a specific motif in order for it to be considered."
+  ),
+  make_option(c("--average_expressions"),
+    action = "store",
+    dest = "average_expressions",
+    default = FALSE,
+    type = "logical",
+    help = "Average TPM expression across samples."
   ),
   make_option(c("--help"),
     action = "store_true",
@@ -132,7 +139,14 @@ samples <- gsub("_included", "", colnames(i_matrix))
 # the hyperparameter to control the weight of gene expression on the likelihood
 # if t_crit == median avg gene expression it means that for the upper half of
 # expressed genes the weight of the expression on the likelihood is diminished
-t_crit <- median(rowMeans(t_matrix))
+#
+#
+#
+if (opt$average_expressions) {
+  t_crit <- median(rowMeans(t_matrix))
+} else {
+  t_crit <- apply(t_matrix, 2, median)
+}
 
 # -----------------------------------------------------------------------------
 
@@ -188,7 +202,13 @@ intersected_N_matrix <-
 
 # Expectation-Maximisation optimisation: MARA Model
 
-model_results <- fit_model_parameters(intersected_i_matrix, intersected_t_matrix, intersected_N_matrix, t_crit)
+model_results <- fit_model_parameters(
+  intersected_i_matrix,
+  intersected_t_matrix,
+  intersected_N_matrix,
+  t_crit,
+  as.integer(opt$average_expressions)
+)
 A_b_table <- model_results[[1]]
 c_table <- model_results[[2]]
 c_table <- data.frame(c_table)

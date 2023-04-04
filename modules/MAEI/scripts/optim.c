@@ -21,7 +21,7 @@
  *  MODIFICATIONS: Maciej_Bak
  *  AFFILIATION: University_of_Basel
  *  AFFILIATION: Swiss_Institute_of_Bioinformatics
- *  CONTACT: maciej.bak@unibas.ch
+ *  CONTACT: wsciekly.maciek@gmail.com
  *  CREATED: 20-01-2020
  *
  *  The following file is still under GPL v 2.0 license:

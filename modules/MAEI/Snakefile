@@ -6,7 +6,7 @@
 #   AUTHOR: Maciej_Bak
 #   AFFILIATION: University_of_Basel
 #   AFFILIATION: Swiss_Institute_of_Bioinformatics
-#   CONTACT: maciej.bak@unibas.ch
+#   CONTACT: wsciekly.maciek@gmail.com
 #   CREATED: 09-04-2020
 #   LICENSE: Apache_2.0
 #
@@ -193,6 +193,7 @@ rule MAE_fit_model_parameters:
             "model.cpp"
         ),
         FLOAT_min_motif_fraction = config["MAE_min_motif_fraction"],
+        BOOL_average_expressions = config["MAE_average_expressions"],
         LOG_cluster_log = os.path.join(
             "{MAE_output_dir}",
             "cluster_log",
@@ -235,6 +236,7 @@ rule MAE_fit_model_parameters:
         --out1 {output.TSV_parameters_A_b} \
         --out2 {output.TSV_parameters_c} \
         --min_motif_fraction {params.FLOAT_min_motif_fraction} \
+        --average_expressions {params.BOOL_average_expressions} \
         1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
         """
 
