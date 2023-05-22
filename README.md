@@ -8,7 +8,7 @@
 
 # MAPP (Motif Activity on Pre-mRNA Processing)
 
-MAPP is a computational method which enables identification of binding motifs for RNA-binding proteins that shape pre-mRNA processing under specific conditions. It uncovers the most plausible regulators of transcripts' poly(A) sites usage as well as differential cassette exon inclusion as inferred from RNA-Seq data.
+MAPP is a computational method which enables identification of binding motifs for RNA-binding proteins (RBPs) that shape pre-mRNA processing under specific conditions, including physiological and pathological cellular states. It uncovers the most plausible regulators of transcripts' poly(A) sites usage as well as differential cassette exon inclusion as inferred from RNA-Seq data.
 
 ## Table of Contents
 
@@ -20,7 +20,7 @@ MAPP is a computational method which enables identification of binding motifs fo
 
 ## General information
 
-Maturation of eukaryotic pre-mRNAs via splicing as well as 3’ end cleavage and polyadenylation is modulated across cell types and conditions by a variety of RNA-binding proteins (RBPs). Both processes increase the variability of the transcriptome, as alternative splicing and alternative polyadenylation are crucial mechanisms for regulation of gene expression. Despite a significant number of proteins being associated with RNAs in human cells, their binding motifs as well as their functional impact is not fully understood. To investigate the beforementioned we have developed MAPP (Motif Activity on Pre-mRNA Processing), a fully automated computational workflow to analyze RNA-Sequencing data.
+Maturation of eukaryotic precursor messenger RNAs (pre-mRNAs) via splicing, 3’ end cleavage and polyadenylation is modulated across cell types and conditions by a variety of RNA-binding proteins (RBPs). Both processes increase the variability of the transcriptome. Despite a significant number of proteins being associated with RNAs in human cells, their binding motifs as well as their functional impact is not fully understood. To characterize the impact of RBPs on splicing and/or polyadenylation (poly(A)) we have developed MAPP (Motif Activity on Pre-mRNA Processing), a fully automated computational tool. MAPP enables the inferrence of the RBP sequence motif-guided regulation of pre-mRNA processing from standard RNA sequencing (RNA-seq) data.
 
 <div align="center">
 <img src="images/mapp_scheme.png" style="display: block; margin: 0 auto;" width="80%" />
