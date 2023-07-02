@@ -158,7 +158,7 @@ python scripts/create-main-config-file.py \
   --pipeline-configfile configs/config.yml
 ```
 
-Please note: The above-mentioned demo test creates a valid template file for MAPP configuration which may be helpful: `MAPP_test_data/config_template.yml`.
+Please note: The above-mentioned [MAPP run on demo test data](#Demo:-Instructions-for-testing-MAPP-based-on-demo-data) creates a valid template file for MAPP configuration which may be helpful: `MAPP_test_data/config_template.yml`.
 
 ### Step 4. Run the pipeline
 
