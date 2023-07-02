@@ -246,7 +246,7 @@ Available options (flags):
 
 In a first step (Step 1) you should create a Directed Acyclic Graph (DAG) based on your data which will show you a graphical representation of the full MAPP run, which you should always do before setting off the actual (Step 2). Please note that Step 1 will be identical for all runs, no matter if you choose to run on a high performance compute cluster or on a local machine and also independent of running MAPP with *Conda* or *Singularity*. 
 
-```bash
+```
 # create a DAG of the workflow in a file: DAG.svg
 bash execution/run.sh \
   -c configs/config.yml \
@@ -265,7 +265,7 @@ After the command shown above finished successfully a file called `DAG.svg` shou
 The example below shows how to perform a local MAPP run using conda and 1 core only:
 
 ```
-# run MAPP locally with Singularity technology with one core
+# run MAPP locally with Conda technology with one core
 bash execution/run.sh \
   -c configs/config.yml \
   -e local \
@@ -279,7 +279,7 @@ bash execution/run.sh \
 The example below shows how to perform a MAPP run using a high performance compute cluster with a SLURM workload manager using conda. 
 
 ```
-# run MAPP on a SLURM-managed cluster with Conda technology with 64 cores
+# run MAPP on a SLURM-managed cluster with Conda technology 
 bash execution/run.sh \
   -c configs/config.yml \
   -e slurm \
@@ -292,7 +292,7 @@ bash execution/run.sh \
 Please use the Singularity option for the `-t` flag as outlined below. Please note that the `-b` flag should be set to provide the MAPP run with resources that the MAPP run might need. For instance when you use shared resources, like genomes etc. However, if you have downloaded everything (e.g. PolyASite atlas, ATtRACT database) into the MAPP directory (as outlined above) you do not need to `-b` flag. 
 
 ```
-# run MAPP locally with Singularity technology with one core
+# run MAPP on a slurm workload manager with Singularity technology 
 bash execution/run.sh \
   -c configs/config.yml \
   -e slurm \
@@ -304,7 +304,7 @@ bash execution/run.sh \
 ### Additional notes
 
 * The most important output of the whole workflow will be collected and summarized in a compressed directory: `summary.tar.gz` located inside the MAPP directory. All results are available in per-module output directories: `modules/*/output`. These folders also contain corresponding logs: both cluster submission info as well as per-job standard output and error streams. Logs of top-level snakemake rules will be stored under `logs` upon succesfull finish of the workflow.
-* In case the user would like to provide a custom set of PWMs - please do not use "|" character in the motifs' names. It is reserved.
+* In case the user would like to provide a custom set of PWMs - please do not use `|` character in the motifs' names. It is reserved.
 * Please note that in case miniconda is not installed in the default `$HOME` directory of the user the path in `jobscript.sh` file for each of the Snakemake profiles might need to be modified.
 * Resources specified in cluster configuration files (for example: `configs/slurm-config.json`) have been optimized to suffice for analysis of most publicly available datasets. Some of these might need minor adjustments in case of more extensive analyses.
 * Advanced users may turn specific modules of the pipeline off in order to utilise already available pre-computed resources for subsequent analyses (cassette exons set, sitecount matrices etc.). Special care needs to be taken to: (1) comment-out the inclusion of a specific module-related Snakefile in the main MAPP Snakefile, (2) provide proper paths to the pre-computed resources in the Snakemake configuration file.
