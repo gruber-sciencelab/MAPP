@@ -1,0 +1,5 @@
+sample	fq1	fq2	condition	adapter1	adapter2	library	color
+S1	path_to_sequencing_reads/S1_1.fastq.gz		control	AGATCGGAAGAGCGT		stranded	#0358A7
+S2	path_to_sequencing_reads/S2_1.fastq.gz		control	AGATCGGAAGAGCGT		stranded	#0358A7
+S3	path_to_sequencing_reads/S3_1.fastq.gz		experiment	AGATCGGAAGAGCGT		stranded	#C70C31
+S4	path_to_sequencing_reads/S4_1.fastq.gz		experiment	AGATCGGAAGAGCGT		stranded	#C70C31
