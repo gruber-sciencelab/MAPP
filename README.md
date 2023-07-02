@@ -53,7 +53,7 @@ conda activate mapp
 On the first run of MAPP it will automatically install all the software dependencies into *Conda* environemnts. The software required for each module is specified in a corresponding `YAML`-formatted text file inside the corresponding `env` directory.
 
 The full installation, as explained above, should take  about 1 hour on a desktop computer that fulfills the minimum specifications required to install and run MAPP, which are:
-*  A Linux operating system (e.g. CentOS Linux 7)
+*  A Linux operating system (MAPP was tested on CentOS Linux 7)
 *  32 GB memory (RAM)
 *  20 GB free disk space
 
