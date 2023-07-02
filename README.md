@@ -57,7 +57,7 @@ The full installation, as explained above, should take  about 1 hour on a deskto
 *  32 GB memory (RAM)
 *  20 GB free disk space
 
-We have also prepared a minimal dataset in order to test the correct execution of MAPP without the requirement for job submissions to a compute cluster environment (please see [Test run on demo data](test-run-on-demo-data) below).
+We have also prepared a minimal dataset in order to test the correct execution of MAPP without the requirement for job submissions to a compute cluster environment (please see [Test run on demo data](#test-run-on-demo-data) below).
 
 
 ## Test run on demo data
