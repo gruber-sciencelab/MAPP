@@ -62,7 +62,9 @@ We have also prepared a minimal dataset in order to test the correct execution o
 
 ## Demo: Instructions for testing MAPP based on demo data
 
-In order to test MAPP we have prepared a bash test script that runs it on [a small demo input dataset](https://doi.org/10.5281/zenodo.5566676). The MAPP demo run should finish within 48 hours, provided that the minimum requirements for MAPP are available (please see above: 20 GB free disk space, 32 GB RAM, etc.). To execute the MAPP run on the demo dataset please make sure that you have installed MAPP as described [above](#installation-instructions). Then activate the MAPP *Conda* environemnt:
+In order to test if the MAPP installation works properly on your system we have prepared a bash test script that runs MAPP on [a small demo input dataset](https://doi.org/10.5281/zenodo.5566676). Please run the MAPP demo as described below and check whether the output looks as specified in the [demo example output shown below](#demo-run-output-validation).
+
+The MAPP demo run should finish within 48 hours, provided that the minimum requirements for MAPP are available (please see above: 20 GB free disk space, 32 GB RAM, etc.). To execute the MAPP run on the demo dataset please make sure that you have installed MAPP as described [above](#installation-instructions). Then activate the MAPP *Conda* environemnt:
 
 ```bash
 conda activate mapp
@@ -79,6 +81,18 @@ In order to speed up the demo run it can be parallelized by providing a higher n
 ```bash
 bash scripts/download-and-run-on-example-data.sh --cores 8
 ```
+
+### Demo run output validation
+
+The output of the MAPP test run based on the demo data should contain a final report `report.html` file inside the following directory which one may open with an internet browser:
+
+```bash
+summary/index.html
+```
+
+Please note that the output of the demo data does not make any biological sense but is only there to test wheter MAPP produce the final `index.html` file on your system, confirming that all MAPP modules have been installated correctly and run properly on your system.
+
+**The output of the MAPP demo run should look comparable to the following [output example](https://gruber-sciencelab.github.io/MAPP-Demo-Output/index.html).**
 
 ## Instructions for running MAPP on user-specified RNA-seq samples
 
