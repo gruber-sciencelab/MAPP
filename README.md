@@ -16,7 +16,6 @@ MAPP is a computational method which enables identification of binding motifs fo
 2. [Installation instructions](#installation-instructions)
 3. [Demo: Instructions for testing MAPP based on demo data](#demo-instructions-for-testing-mapp-based-on-demo-data)
 4. [Instructions for running MAPP on user-specified RNA-seq samples](#instructions-for-running-mapp-on-user-specified-rna-seq-samples)
-5. [Appendix A: Download and installation of Miniconda3 and Mamba](#appendix-a-download-and-installation-of-miniconda3-and-mamba)
 
 ## General information
 
@@ -38,7 +37,7 @@ MAPP is implemented as a modular bioinformatics pipeline assembled in the [Snake
 
 Snakemake is a workflow management system that helps to create and execute data processing pipelines. It can be easily installed via the _bioconda_ channel from the anaconda cloud service. In order to simplify the installation process for the users we have prepared a recipe for a [Conda](https://docs.conda.io/en/latest/) environment which contains all the software necessary to execute our workflow. To resolve dependencies efficiently MAPP additionally requires the [Mamba](https://github.com/mamba-org/mamba) package manager. As such, these two are strict requirements. For instructions on how to install *Conda* and *Mamba* please see [Appendix A](#appendix-a-download-and-installation-of-miniconda3-and-mamba). MAPP was tested on *Conda* version 22.11.1 and *Mamba* version 1.2.0. Thus we recommend to use these versions to make sure full compatibility.
 
-##### (Optional) Installation of Conda and/or Mamba (if you have not yet installed on your system)
+#### (Optional) Installation of Conda and/or Mamba (if you have not yet installed on your system)
 
 To install the latest version of [miniconda] on a Linux systems please execute:  
 
