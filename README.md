@@ -44,7 +44,7 @@ MAPP installation is therefore automatised and can be achieved by simply downloa
 bash scripts/create-conda-environment.sh
 ```
 
-After the above bash script finished successfully, a *Conda* environment called "mapp" will be available, which has next to be activated as follows:
+After the above bash script finished successfully, a *Conda* environment called "mapp" will be available. Please test that you are able to activate it as follows:
 
 ```bash
 conda activate mapp
@@ -60,26 +60,29 @@ The full installation, as explained above, should take  about 1 hour on a deskto
 We have also prepared a minimal dataset in order to test the correct execution of MAPP without the requirement for job submissions to a compute cluster environment (please see [Test run on demo data](#test-run-on-demo-data) below).
 
 
-## Test run on demo data
-In order to facilitate testing MAPP we have prepared [a small demo of input data](https://doi.org/10.5281/zenodo.5566676) as well as a bash script which will download it and handle all of the below-described analysis setup automatically. The script will also trigger the workflow on the local machine with *conda* environments in place. The whole demo analysis run should finish within 48h. The demo data run requires 20 GB free disk space and 32 GB RAM. To execute this test run you will need to navigate to the directory into which you have cloned our repository and type:
+## Demo: Instructions for testing MAPP based on demo data
+
+In order to test MAPP we have prepared a bash test script that runs it on [a small demo input dataset](https://doi.org/10.5281/zenodo.5566676). The MAPP demo run should finish within 48 hours, provided that the minimum requirements for MAPP are available (please see above: 20 GB free disk space, 32 GB RAM, etc.). To execute the MAPP run on the demo dataset please make sure that you have installed MAPP as described [above](#installation-instructions). Then activate the MAPP *Conda* environemnt:
+
+```bash
+conda activate mapp
+```
+
+Then navigate to the MAPP code directory and run:
 
 ```bash
 bash scripts/download-and-run-on-example-data.sh
 ```
 
-Additionally, in order to speed up the test, this workflow run may be parallelized by providing a higher number of cores available for the pipeline, ex:
+In order to speed up the demo run it can be parallelized by providing a higher number of cores (if available on the machine the demo is executed on) as follows:
 
 ```bash
 bash scripts/download-and-run-on-example-data.sh --cores 8
 ```
 
-The above-mentioned test script creates a valid template file for MAPP configuration which may serve as help for further pipeline runs: `MAPP_test_data/config_template.yml`.
+## Instructions for running MAPP on user-specified RNA-seq samples
 
-MAPP has been tested with dependencies versions specified in the _conda_ environments.
-
-## Instructions for use
-
-All the following steps should be executed inside previously prepared Conda environment. Please activate it with:
+Before you can run MAPP on your own data, please make first sure that you have installed MAPP properly by following the MAPP installation instructions as described [above](#installation-instructions). Then please activate the MAPP *Conda* environment as follows:
 
 ```bash
 conda activate mapp
@@ -154,6 +157,8 @@ python scripts/create-main-config-file.py \
   --config-template configs/config_template.yml \
   --pipeline-configfile configs/config.yml
 ```
+
+Please note: The above-mentioned demo test creates a valid template file for MAPP configuration which may be helpful: `MAPP_test_data/config_template.yml`.
 
 ### Step 4. Run the pipeline
 
