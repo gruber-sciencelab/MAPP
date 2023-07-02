@@ -14,8 +14,8 @@ MAPP is a computational method which enables identification of binding motifs fo
 
 1. [General information](#general-information)
 2. [Installation instructions](#installation-instructions)
-3. [Execution test](#execution-test)
-4. [Workflow execution](#workflow-execution)
+3. [Demo: Instructions for testing MAPP based on demo data](#demo-instructions-for-testing-mapp-based-on-demo-data)
+4. [Instructions for running MAPP on user-specified RNA-seq samples](#instructions-for-running-mapp-on-user-specified-rna-seq-samples)
 5. [Appendix A: Download and installation of Miniconda3 and Mamba](#appendix-a-download-and-installation-of-miniconda3-and-mamba)
 
 ## General information
