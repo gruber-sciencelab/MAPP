@@ -38,6 +38,23 @@ MAPP is implemented as a modular bioinformatics pipeline assembled in the [Snake
 
 Snakemake is a workflow management system that helps to create and execute data processing pipelines. It can be easily installed via the _bioconda_ channel from the anaconda cloud service. In order to simplify the installation process for the users we have prepared a recipe for a [Conda](https://docs.conda.io/en/latest/) environment which contains all the software necessary to execute our workflow. To resolve dependencies efficiently MAPP additionally requires the [Mamba](https://github.com/mamba-org/mamba) package manager. As such, these two are strict requirements. For instructions on how to install *Conda* and *Mamba* please see [Appendix A](#appendix-a-download-and-installation-of-miniconda3-and-mamba). MAPP was tested on *Conda* version 22.11.1 and *Mamba* version 1.2.0. Thus we recommend to use these versions to make sure full compatibility.
 
+##### (Optional) Installation of Conda and/or Mamba (if you have not yet installed on your system)
+
+To install the latest version of [miniconda] on a Linux systems please execute:  
+
+```bash
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+source .bashrc
+```
+
+In addition, in order to execute workflows based on most-recent Snakemake versions it is **essential** to install *Mamba* alongside *Conda*. Mamba is basically Conda rewritten in _C++_ and it became the default front-end package manager utilized in Snakemake. For more information please visit [this page](https://www.biostars.org/p/9461665/).
+
+Mamba **has to** be installed in the *Conda* `base` environment with:
+```bash
+conda install -n base -c conda-forge mamba
+```
+
 MAPP installation is therefore automatised and can be achieved by simply downloading the MAPP GitHub repository (also possible with `git clone` command, provided the Git version control system is installed). Once the MAPP GitHub repository has been downloaed (and unpacked in case of a manual download via the GitHub website), please navigate within a Bash Terminal window to the MAPP directory and run the bash script that will build the environment for MAPP:
 
 ```bash
@@ -256,26 +273,6 @@ bash execution/run.sh \
 * Please note that in case Miniconda is not installed in the default `$HOME` directory of the user the path in `jobscript.sh` file for each of the Snakemake profiles might need to be modified.
 * Resources specified in cluster configuration files (for example: `configs/slurm-config.json`, `configs/sge-config.yaml`) have been optimized to suffice for analysis of most publicly available datasets. Some of these might need minor adjustments in case of more extensive analyses. For local pipeline execution (no cluster support) please note that a machine with at least 32GB of RAM is advised.
 * Advenced users may turn specific modules of the pipeline off in order to utilise already available pre-computed resources for subsequent analyses (cassette exons set, sitecount matrices etc.) Special care needs to be taken to: (1) comment-out the inclusion of a specific module-related Snakefile in the main MAPP Snakefile, (2) provide proper paths to the pre-computed resources in the snakemake configuration file.
-
-## Appendix A: Download and installation of Miniconda3 and Mamba
-
-To install the latest version of [miniconda] on a Linux systems please execute:  
-
-```bash
-wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-source .bashrc
-```
-
-In addition, in order to execute workflows based on most-recent Snakemake versions it is **essential** to install Mamba alongside Conda.
-Mamba is basically Conda rewritten in _C++_ and it became the default front-end package manager utilized in Snakemake.
-For more information please visit [this page](https://www.biostars.org/p/9461665/).
-
-Mamba **has to** be installed in the `base` environment with:
-```bash
-conda install -n base -c conda-forge mamba
-```
-
 
 [Snakemake]: https://snakemake.readthedocs.io/en/stable/
 [miniconda]: https://docs.conda.io/en/latest/miniconda.html
