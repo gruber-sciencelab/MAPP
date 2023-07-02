@@ -1,0 +1,5 @@
+sample	fq1	fq2	condition	adapter1	adapter2	library
+S1	path_to_sequencing_reads/S1_1.fastq.gz		control	AGATCGGAAGAGCGT		stranded
+S2	path_to_sequencing_reads/S2_1.fastq.gz		control	AGATCGGAAGAGCGT		stranded
+S3	path_to_sequencing_reads/S3_1.fastq.gz		experiment	AGATCGGAAGAGCGT		stranded
+S4	path_to_sequencing_reads/S4_1.fastq.gz		experiment	AGATCGGAAGAGCGT		stranded
