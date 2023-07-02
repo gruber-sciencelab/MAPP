@@ -138,8 +138,8 @@ RNA-Seq samples-related information should provided into the pipeline in a form 
 
 | sample | fq1 | fq2 | condition | adapter1 | adapter2 | library |
 |-----------|---|---|---|---|---|---|
-| Sample A  |   ||WildType|   |   |   |
-| Sample B  |   ||KnockDown|   |   |   |
+| Sample A  |   || |   |   |   |
+| Sample B  |   || |   |   |   |
 
 </div>
 
@@ -147,6 +147,8 @@ RNA-Seq samples-related information should provided into the pipeline in a form 
 * Please always provide paths to the forward reads (FASTQ format) in the _fq1_ column and reverse reads in _fq2_ column. This holds for single-end sequencing data too, in case of reads originating only from the reverse strand please leave _fq1_ empty, otherwise leave _fq2_ empty.
 * _adapter1_ refers to reads in _fq1_, _adapter2_ refers to reads in _fq2_.
 * _library_ column may be specified as "stranded" or "unstranded".
+
+We have prepared example design tables for [paired-end](./examples/paired_end_sequencing_design_table.tsv) and [single-end](./examples/single_end_sequencing_design_table.tsv) sequencing data.
 
 ### Step 3. Set up the config.yaml file
 
