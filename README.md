@@ -199,16 +199,15 @@ Please note: The above-mentioned [MAPP run on demo test data](#demo-instructions
 ### Step 4. Run the pipeline
 
 There are several ways to start the pipeline, depending on the following options:
-* *local run* vs. *compute cluster supported run*. The *local run* initiates the workflow on a local machine, like a strong notebook or a head node of a compute cluster. We recommend for a *local run* on real RNA-seq data a minimum of 16 cores and 100 GB of RAM. However, the actual required recourses depend of course on the actually analysed numbers of samples and the size of each sample. The *compute cluster supported run* will submit many of the Snakemake rules as a separate job to a compute node on a high performance compute cluster, so that there is little workload on the head node. We have tested MAPP on a compute cluster with a SLURM workload manager.
-* Conda environments vs. Singularity containers. Technology which should be utilized to ensure reproducibility of the analyses. The former selection is tied to building a dedicated Conda environment for each Snakemake rule in the workflow. The latter implies pulling Docker images from online servers and converting them to [Singularity] images - all rules will be executed within. This option requires *Singularity* to be installed on the local machine (and the cluster, if specified).
+* ***local run* vs. *high performance compute cluster supported run***. The *local run* initiates the workflow on a local machine, like a strong notebook or a head node of a compute cluster. We recommend for a *local run* on real RNA-seq data a minimum of 16 cores and 100 GB of RAM. However, the actual required recourses depend of course on the actually analysed numbers of samples and the size of each sample. The *high performance compute cluster supported run* will submit many of the Snakemake rules as a separate job to a compute node on a high performance compute cluster, so that there is little workload on the head node. We have tested MAPP on a compute cluster with a SLURM workload manager.
+* ***Conda environments* vs. *Singularity containers***. Technology which should be utilized to ensure reproducibility of the analyses. Using *Conda environments* is tied to building a dedicated *Conda* environment for each Snakemake rule in the MAPP workflow. Using *Singularity containers* implies pulling Docker images from online servers and converting them to [Singularity] images - all rules will be executed within. This option requires *Singularity* to be installed on the local machine (and the high performance compute cluster, if specified).
 
-All of these options are encapsulated in distinct [Snakemake profiles](https://github.com/Snakemake-Profiles/doc). Users who would like to execute MAPP on computational clusters with a queuing engine different than SLURM are encouraged to build their own profiles, give us a feedback and we would happily include new configuration settings into this repository!
+All of these options are encapsulated in distinct [Snakemake profiles](https://github.com/Snakemake-Profiles/doc). Users who would like to execute MAPP on high performance compute clusters with a scheduler (workload manager) different to SLURM are encouraged to build their own profiles, give us a feedback and we would happily include new configuration settings into this repository!
 
-In order to execute MAPP please run the master script with proper flags, as presented below:
+In order to execute MAPP please run the MAPP master script `execution/run.sh` with proper flags (see the options below). Examples for running the MAPP master script are provided below the flag descriptions.
 
 ```
-This is the main script to call the MAPP workflow.
-Available options:
+Available options (flags):
 
   -c/--configfile {XXX} (REQUIRED)
   Path to the snakemake config file.
@@ -243,7 +242,7 @@ Available options:
   (Default: 1)
 ```
 
-Examples:
+Examples for running the MAPP master script `execution/run.sh`:
 ```
 # create a DAG of the workflow in a file: DAG.svg
 bash execution/run.sh \
