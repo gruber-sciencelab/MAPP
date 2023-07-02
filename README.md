@@ -36,32 +36,53 @@ MAPP is implemented as a modular bioinformatics pipeline assembled in the [Snake
 
 ## Installation instructions
 
-Snakemake is a workflow management system that helps to create and execute data processing pipelines. It requires Python 3 and can be most easily installed via the _bioconda_ channel from the anaconda cloud service. In order to simplify the installation process for the users we have prepared a recipe for a [Conda](https://docs.conda.io/en/latest/) environment which contains all the software necessary to execute our workflow. To resolve dependencies efficiently MAPP additionally requires [Mamba](https://github.com/mamba-org/mamba) package manager. As such, these two should be considered as strict requirements. For instructions on how to install Conda and Mamba please see [Appendix A](#appendix-a-download-and-installation-of-miniconda3-and-mamba).
+Snakemake is a workflow management system that helps to create and execute data processing pipelines. It can be easily installed via the _bioconda_ channel from the anaconda cloud service. In order to simplify the installation process for the users we have prepared a recipe for a [Conda](https://docs.conda.io/en/latest/) environment which contains all the software necessary to execute our workflow. To resolve dependencies efficiently MAPP additionally requires the [Mamba](https://github.com/mamba-org/mamba) package manager. As such, these two are strict requirements. For instructions on how to install *Conda* and *Mamba* please see [Appendix A](#appendix-a-download-and-installation-of-miniconda3-and-mamba). MAPP was tested on *Conda* version 22.11.1 and *Mamba* version 1.2.0. Thus we recommend to use these versions to make sure full compatibility.
 
-MAPP installation is therefore automatised and limitted to downloading the following repository (also possible with `git clone` command, provided Git version control system is available), navigating to the MAPP directory and running a shell script which will build the environment for the workflow. This may be achieved by the following command: `bash scripts/create-conda-environment.sh`. This environment needs to be later activated with `conda activate mapp`.
+MAPP installation is therefore automatised and can be achieved by simply downloading the MAPP GitHub repository (also possible with `git clone` command, provided the Git version control system is installed). Once the MAPP GitHub repository has been downloaed (and unpacked in case of a manual download via the GitHub website), please navigate within a Bash Terminal window to the MAPP directory and run the bash script that will build the environment for MAPP:
 
-We have also prepared a minimal dataset in order to test the correct execution of MAPP on a local machine (more information below).
+```bash
+bash scripts/create-conda-environment.sh
+```
 
-**Currently MAPP supports machines with a Linux operating system.**
+After the above bash script finished successfully, a *Conda* environment called "mapp" will be available. Please test that you are able to activate it as follows:
 
-## Execution test
-In order to facilitate testing MAPP we have prepared [a small test set of input data](https://doi.org/10.5281/zenodo.5566676) as well as a bash script which will download it and handle all of the below-described analysis setup automatically. The script will also trigger the workflow on the local machine with per-rule conda environments mechanism in place. The whole analysis should take below 48h to finish, requires at least 15GB free disk space and 32GB RAM available. To execute this test run you will need to navigate to the directory into which you have cloned our repository and type:
+```bash
+conda activate mapp
+```
+
+On the first run of MAPP it will automatically install all the software dependencies into *Conda* environemnts. The software required for each module is specified in a corresponding `YAML`-formatted text file inside the corresponding `env` directory.
+
+The full installation, as explained above, should take  about 1 hour on a desktop computer that fulfills the minimum specifications required to install and run MAPP, which are:
+*  A Linux operating system (e.g. CentOS Linux 7)
+*  32 GB memory (RAM)
+*  20 GB free disk space
+
+We have also prepared a minimal dataset in order to test the correct execution of MAPP without the requirement for job submissions to a compute cluster environment (please see [Test run on demo data](#test-run-on-demo-data) below).
+
+
+## Demo: Instructions for testing MAPP based on demo data
+
+In order to test MAPP we have prepared a bash test script that runs it on [a small demo input dataset](https://doi.org/10.5281/zenodo.5566676). The MAPP demo run should finish within 48 hours, provided that the minimum requirements for MAPP are available (please see above: 20 GB free disk space, 32 GB RAM, etc.). To execute the MAPP run on the demo dataset please make sure that you have installed MAPP as described [above](#installation-instructions). Then activate the MAPP *Conda* environemnt:
+
+```bash
+conda activate mapp
+```
+
+Then navigate to the MAPP code directory and run:
 
 ```bash
 bash scripts/download-and-run-on-example-data.sh
 ```
 
-Additionally, in order to speed up the test, this workflow run may be parallelized by providing a higher number of cores available for the pipeline, ex:
+In order to speed up the demo run it can be parallelized by providing a higher number of cores (if available on the machine the demo is executed on) as follows:
 
 ```bash
 bash scripts/download-and-run-on-example-data.sh --cores 8
 ```
 
-The above-mentioned test script creates a valid template file for MAPP configuration which may serve as help for further pipeline runs: `MAPP_test_data/config_template.yml`.
+## Instructions for running MAPP on user-specified RNA-seq samples
 
-## Workflow execution
-
-All the following steps should be executed inside previously prepared Conda environment. Please activate it with:
+Before you can run MAPP on your own data, please make first sure that you have installed MAPP properly by following the MAPP installation instructions as described [above](#installation-instructions). Then please activate the MAPP *Conda* environment as follows:
 
 ```bash
 conda activate mapp
@@ -117,13 +138,13 @@ RNA-Seq samples-related information should provided into the pipeline in a form 
 
 | sample | fq1 | fq2 | condition | adapter1 | adapter2 | library |
 |-----------|---|---|---|---|---|---|
-| Sample A  |   |   |   |   |   |   |
-| Sample B  |   |   |   |   |   |   |
+| Sample A  |   ||WildType|   |   |   |
+| Sample B  |   ||KnockDown|   |   |   |
 
 </div>
 
-* Please to not use special characters in the samples' IDs nor condition columns: . | whitespaces
-* Please always provide paths to the forward reads in the _fq1_ column and reverse reads in _fq2_ column. This holds for single-end sequencing data to, in case of reads originating only from the reverse strand please leave _fq1_ empty.
+* Please do not use special characters in the samples' IDs nor condition columns: `.`, `|`, `{whitespaces}`
+* Please always provide paths to the forward reads (FASTQ format) in the _fq1_ column and reverse reads in _fq2_ column. This holds for single-end sequencing data too, in case of reads originating only from the reverse strand please leave _fq1_ empty, otherwise leave _fq2_ empty.
 * _adapter1_ refers to reads in _fq1_, _adapter2_ refers to reads in _fq2_.
 * _library_ column may be specified as "stranded" or "unstranded".
 
@@ -136,6 +157,8 @@ python scripts/create-main-config-file.py \
   --config-template configs/config_template.yml \
   --pipeline-configfile configs/config.yml
 ```
+
+Please note: The above-mentioned [MAPP run on demo test data](#demo-instructions-for-testing-MAPP-based-on-demo-data) creates a valid template file for MAPP configuration which may be helpful: `MAPP_test_data/config_template.yml`.
 
 ### Step 4. Run the pipeline
 
