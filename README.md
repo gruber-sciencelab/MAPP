@@ -42,7 +42,9 @@ MAPP installation is therefore automatised and limitted to downloading the follo
 
 We have also prepared a minimal dataset in order to test the correct execution of MAPP on a local machine (more information below).
 
-**Currently MAPP supports machines with a Linux operating system.**
+**Currently MAPP supports machines with a Linux operating system.**  
+**All dependencies have been specified in _conda_ environments for respective modules.**  
+**(`YAML`-formatted text files inside `env` directories)**
 
 ## Run on Demo data - Execution test
 In order to facilitate testing MAPP we have prepared [a small test set of input data](https://doi.org/10.5281/zenodo.5566676) as well as a bash script which will download it and handle all of the below-described analysis setup automatically. The script will also trigger the workflow on the local machine with per-rule conda environments mechanism in place. The whole analysis should take below 48h to finish, requires at least 15GB free disk space and 32GB RAM available. To execute this test run you will need to navigate to the directory into which you have cloned our repository and type:
@@ -117,13 +119,13 @@ RNA-Seq samples-related information should provided into the pipeline in a form 
 
 | sample | fq1 | fq2 | condition | adapter1 | adapter2 | library |
 |-----------|---|---|---|---|---|---|
-| Sample A  |/path/to/fastq_file_sample_A.fastq||WildType|   |   |   |
-| Sample B  |/path/to/fastq_file_sample_A.fastq||KnockDown|   |   |   |
+| Sample A  |   ||WildType|   |   |   |
+| Sample B  |   ||KnockDown|   |   |   |
 
 </div>
 
-* Please do not use special characters in the samples' IDs nor condition columns: . | whitespaces
-* Please always provide paths to the forward reads in the _fq1_ column and reverse reads in _fq2_ column. This holds for single-end sequencing data too, in case of reads originating only from the reverse strand please leave _fq1_ empty, otherwise leave _fq2_ empty.
+* Please do not use special characters in the samples' IDs nor condition columns: `.`, `|`, `{whitespaces}`
+* Please always provide paths to the forward reads (FASTQ format) in the _fq1_ column and reverse reads in _fq2_ column. This holds for single-end sequencing data too, in case of reads originating only from the reverse strand please leave _fq1_ empty, otherwise leave _fq2_ empty.
 * _adapter1_ refers to reads in _fq1_, _adapter2_ refers to reads in _fq2_.
 * _library_ column may be specified as "stranded" or "unstranded".
 
