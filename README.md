@@ -152,7 +152,7 @@ We have prepared example design tables for [paired-end](./examples/paired_end_se
 
 ### Step 3. Set up the config.yaml file
 
-All the input paths and parameters' values for this Snakemake pipeline are specified in configuration file: `config.yml`. However, because MAPP is a rather complex workflow that consits of separate modules the configuration file has to be generated automatically, based on a configuration template file: `config_template.yml`. It is this file that needs to be adapted by the user manually. Once it has been filled appropriately, a pipeline config file can be created on its base by running a python script:
+All the input paths and parameters' values for this Snakemake pipeline are specified in a configuration file called `config.yml`. However, because MAPP is a rather complex workflow that consits of separate modules this configuration file has to be generated automatically, based on a configuration template file called `config_template.yml`. It is this file that needs to be adapted by the user manually. Once it has been filled by the user with project specific information, the actual pipeline config file mentioned above (`config.yml`) can be created automatically by running the `scripts/create-main-config-file.py` python script on the `config_template.yml` file filled by the user as follows:
 
 ```bash
 python scripts/create-main-config-file.py \
