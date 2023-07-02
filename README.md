@@ -94,6 +94,8 @@ Please note that the output of the demo data does not make any biological sense 
 
 **The output of the MAPP demo run should look comparable to the following [output example](https://gruber-sciencelab.github.io/MAPP-Demo-Output/index.html).**
 
+If you are interrested in looking at biologically meaningful MAPP results please have a look at our [preprint](https://www.biorxiv.org/content/10.1101/2022.01.09.475576), our corresponding [Zenodo results repository](https://zenodo.org/record/7828450), or run MAPP on your own RNA-Seq datasets as described below.
+
 ## Instructions for running MAPP on user-specified RNA-seq samples
 
 Before you can run MAPP on your own data, please make first sure that you have installed MAPP properly by following the MAPP installation instructions as described [above](#installation-instructions). Then please activate the MAPP *Conda* environment as follows:
