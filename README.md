@@ -40,14 +40,16 @@ Snakemake is a workflow management system that helps to create and execute data 
 
 MAPP installation is therefore automatised and limitted to downloading the following repository (also possible with `git clone` command, provided Git version control system is available), navigating to the MAPP directory and running a shell script which will build the environment for the workflow. This may be achieved by the following command: `bash scripts/create-conda-environment.sh`. This environment needs to be later activated with `conda activate mapp`.
 
+Full installation, as explained above, should take ~1h on a "normal" desktop computer.
+
 We have also prepared a minimal dataset in order to test the correct execution of MAPP on a local machine (more information below).
 
 **Currently MAPP supports machines with a Linux operating system.**  
 **All dependencies have been specified in _conda_ environments for respective modules.**  
 **(`YAML`-formatted text files inside `env` directories)**
 
-## Run on Demo data - Execution test
-In order to facilitate testing MAPP we have prepared [a small test set of input data](https://doi.org/10.5281/zenodo.5566676) as well as a bash script which will download it and handle all of the below-described analysis setup automatically. The script will also trigger the workflow on the local machine with per-rule conda environments mechanism in place. The whole analysis should take below 48h to finish, requires at least 15GB free disk space and 32GB RAM available. To execute this test run you will need to navigate to the directory into which you have cloned our repository and type:
+## Test run on demo data
+In order to facilitate testing MAPP we have prepared [a small demo of input data](https://doi.org/10.5281/zenodo.5566676) as well as a bash script which will download it and handle all of the below-described analysis setup automatically. The script will also trigger the workflow on the local machine with per-rule conda environments mechanism in place. The whole analysis should take below 48h to finish, requires at least 15GB free disk space and 32GB RAM available. To execute this test run you will need to navigate to the directory into which you have cloned our repository and type:
 
 ```bash
 bash scripts/download-and-run-on-example-data.sh
@@ -61,7 +63,9 @@ bash scripts/download-and-run-on-example-data.sh --cores 8
 
 The above-mentioned test script creates a valid template file for MAPP configuration which may serve as help for further pipeline runs: `MAPP_test_data/config_template.yml`.
 
-## Workflow execution
+MAPP has been tested with dependencies versions specified in the _conda_ environments.
+
+## Instructions for use
 
 All the following steps should be executed inside previously prepared Conda environment. Please activate it with:
 
