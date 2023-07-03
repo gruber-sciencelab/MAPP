@@ -47,6 +47,8 @@ bash Miniconda3-latest-Linux-x86_64.sh
 source .bashrc
 ```
 
+Please make sure that _Conda_ has been initlaised in the current terminal: proceed only if the shell prompt has been prefixed with `(base) `.
+
 In addition, in order to execute workflows based on most-recent Snakemake versions it is **essential** to install *Mamba* alongside *Conda*. Mamba is basically Conda rewritten in _C++_ and it became the default front-end package manager utilized in Snakemake. For more information please visit [this page](https://www.biostars.org/p/9461665/).
 
 Mamba **has to** be installed in the *Conda* `base` environment with:
