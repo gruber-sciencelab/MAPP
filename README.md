@@ -58,7 +58,9 @@ conda install -n base -c conda-forge mamba
 
 #### Once you have installed Conda and Mamba on your system
 
-Given that *Conda* (version 22.11.1) and *Mamba* (version 1.2.0) are both installed on your system installation of MAPP can be done by simply downloading the MAPP GitHub repository and unpacking it (this is also possible with `git clone https://github.com/gruber-sciencelab/MAPP.git MAPP` command, provided the Git version control system is installed). Once the MAPP GitHub repository has been downloaded and unpacked or cloned via git, respectively, please navigate within a Bash Terminal window to the corresponding MAPP directory and run the bash script that will build the *Conda* environment for MAPP:
+Before following the steps described here, please make sure that *Conda* (version 22.11.1) and *Mamba* (version 1.2.0) are both installed on your system (instructions are provided above) and that your conda configuration has NOT SET *channel_priority strict*.
+
+The installation of MAPP can be done by simply downloading the MAPP GitHub repository and unpacking it (this is also possible with `git clone https://github.com/gruber-sciencelab/MAPP.git MAPP` command, provided the Git version control system is installed). Once the MAPP GitHub repository has been downloaded and unpacked or cloned via git, respectively, please navigate within a Bash Terminal window to the corresponding MAPP directory and run the bash script that will build the *Conda* environment for MAPP:
 
 ```bash
 bash scripts/create-conda-environment.sh
