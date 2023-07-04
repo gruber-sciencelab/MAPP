@@ -16,7 +16,6 @@ name: suppa
 
 channels:
   - bioconda
-  - conda-forge
 
 dependencies:
   - suppa=2.3
