@@ -86,19 +86,21 @@ We have also prepared a minimal dataset in order to test the correct execution o
 
 In order to test if the MAPP installation works properly on your system we have prepared a bash test script that runs MAPP on [a small demo input dataset](https://doi.org/10.5281/zenodo.5566676). Please run the MAPP demo as described below and check whether the output looks as specified in the [demo example output shown below](#demo-run-output-validation).
 
-The MAPP demo run should finish within 48 hours, provided that the minimum requirements for MAPP are available (please see above: 20 GB free disk space, 32 GB RAM, etc.). To execute the MAPP run on the demo dataset please make sure that you have installed MAPP as described [above](#installation-instructions). Then activate the MAPP *Conda* environemnt:
+The MAPP demo run should finish within 48 hours, provided that the minimum requirements for MAPP are available (please see above: 20 GB free disk space, 32 GB RAM, etc.). However, provided that you have more compute cores and memory (RAM) available you can speed it up, as shown below. To execute the MAPP run on the demo dataset please make sure that you have installed MAPP as described [above](#installation-instructions). Then activate the MAPP *Conda* environemnt:
 
 ```bash
 conda activate mapp
 ```
 
-Then navigate to the MAPP code directory and run:
+If you have activated your *mapp* conda environment successfully you should see *(mapp)* in your terminal window, instead of *(base)*. 
+
+Having the *Conda mapp* environment activated, please then navigate to the MAPP code directory and run:
 
 ```bash
 bash scripts/download-and-run-on-example-data.sh
 ```
 
-In order to speed up the demo run it can be parallelized by providing a higher number of cores (if available on the machine the demo is executed on) as follows:
+In order to speed up the demo run it can be parallelized by providing a higher number of cores (if available on the machine the demo is executed on). However, please be aware that providing e.g. 32 cores will also mean that several compute jobs can run in parallel, which will result in more memory (RAM) usage as well. Thus, please monitor your memory usage while running MAPP using more cores. If you are unsure the savest will be to run the MAPP demo test without setting any cores (the default will be 1 core) as outlined above. However, to run the demo with e.g. 8 cores please specify the number of cores as outlined below:
 
 ```bash
 bash scripts/download-and-run-on-example-data.sh --cores 8
