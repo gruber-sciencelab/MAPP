@@ -58,7 +58,9 @@ conda install -n base -c conda-forge mamba
 
 #### Once you have installed Conda and Mamba on your system
 
-Given that *Conda* (version 22.11.1) and *Mamba* (version 1.2.0) are both installed on your system installation of MAPP can be done by simply downloading the MAPP GitHub repository and unpacking it (this is also possible with `git clone https://github.com/gruber-sciencelab/MAPP.git MAPP` command, provided the Git version control system is installed). Once the MAPP GitHub repository has been downloaded and unpacked or cloned via git, respectively, please navigate within a Bash Terminal window to the corresponding MAPP directory and run the bash script that will build the *Conda* environment for MAPP:
+Before following the steps described here, please make sure that *Conda* (version 22.11.1) and *Mamba* (version 1.2.0) are both installed on your system (instructions are provided above) and that your conda configuration has NOT SET *channel_priority: strict*, but has set *channel_priority: flexible* (the latter of which is the *Conda* default). If you are unsure about your setting, you can look into your `~/.condarc` file, where you either will see no entry for `channel_priority:`, which means that the detault (flexible) is used as required for MAPP. However, if you find `channel_priority: flexible` this is as well fine. If your *Conda channel priorities* are not set to *default* (no entry in your `~/.condarc` file) and also not to *channel_priority: flexible* you can set it correctly with the following command `conda config --set channel_priority true`. Please find further information about *Conda channel priorities* [here](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-channels.html).
+
+The installation of MAPP can be done by simply downloading the MAPP GitHub repository and unpacking it (this is also possible with `git clone https://github.com/gruber-sciencelab/MAPP.git MAPP` command, provided the Git version control system is installed). Once the MAPP GitHub repository has been downloaded and unpacked or cloned via git, respectively, please navigate within a *Bash Terminal* to the corresponding MAPP directory and run the bash script that will build the *Conda* environment for MAPP which will automatically be named *mapp*:
 
 ```bash
 bash scripts/create-conda-environment.sh
@@ -84,19 +86,23 @@ We have also prepared a minimal dataset in order to test the correct execution o
 
 In order to test if the MAPP installation works properly on your system we have prepared a bash test script that runs MAPP on [a small demo input dataset](https://doi.org/10.5281/zenodo.5566676). Please run the MAPP demo as described below and check whether the output looks as specified in the [demo example output shown below](#demo-run-output-validation).
 
-The MAPP demo run should finish within 48 hours, provided that the minimum requirements for MAPP are available (please see above: 20 GB free disk space, 32 GB RAM, etc.). To execute the MAPP run on the demo dataset please make sure that you have installed MAPP as described [above](#installation-instructions). Then activate the MAPP *Conda* environemnt:
+The MAPP demo run should finish within 48 hours, provided that the minimum requirements for MAPP are available (please see above: 20 GB free disk space, 32 GB RAM, etc.). However, provided that you have more compute cores and memory (RAM) available you can speed it up, as shown below. To execute the MAPP run on the demo dataset please make sure that you have installed MAPP as described [above](#installation-instructions). Then activate the MAPP *Conda* environemnt:
 
 ```bash
 conda activate mapp
 ```
 
-Then navigate to the MAPP code directory and run:
+If you have activated your *mapp* conda environment successfully you should see *(mapp)* in your terminal window, instead of *(base)*. 
+
+Having the *Conda mapp* environment activated, please then navigate to the MAPP code directory and run:
 
 ```bash
 bash scripts/download-and-run-on-example-data.sh
 ```
 
-In order to speed up the demo run it can be parallelized by providing a higher number of cores (if available on the machine the demo is executed on) as follows:
+#### (Alternative) MAPP demo test run using multiple cores 
+
+In order to speed up the demo run it can be parallelized by providing a higher number of cores (if available on the machine the demo is executed on). However, please be aware that providing e.g. 32 cores will also mean that several compute jobs can run in parallel, which can result in a higher amount of memory (RAM) required for your run. Thus, please monitor the memory usage while running MAPP using multiple cores. A starting point might be to have available a minium 32 GB RAM memory, but when using 6 or more cores use instead *number cores x 6 GB RAM*. For example, if you want to run MAPP on the demo data using 18 cores, try to start the run by reserving at least 108 GB RAM memory (=18x6). If you are unsure about how to deal with this the savest way to run MAPP on the demo data will be to set off the run without setting any number of cores as outlined above (1 core will be used then). However, to run MAPP on the demo data with e.g. 8 cores please specify the number of cores as outlined below:
 
 ```bash
 bash scripts/download-and-run-on-example-data.sh --cores 8
