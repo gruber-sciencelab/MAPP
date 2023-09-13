@@ -27,7 +27,7 @@ Maturation of eukaryotic precursor messenger RNAs (pre-mRNAs) via splicing, 3’
 
 > _**Inferring the regulatory sequence motifs and their positional impact on splicing and 3’ end processing using MAPP.** (a) Sketch illustrating how regulators (Reg) bind pre-mRNAs to influence the usage of splice sites (SS) and / or poly(A) sites (PAS). (b) RNA-sequencing (RNA-seq) libraries are available or can be created for most cellular systems of interest. (c) MAPP is an automated tool for analyzing the splicing and 3’ end processing patterns inferred from RNA-seq data with the MAEI (Motif Activity on Exon Inclusion) and KAPACv2 (K-mer Analysis of Poly(A) site Choice) models, respectively. (d) MAPP infers regulatory motifs for RBPs and reports detailed maps of their position-dependent impact on cassette exon inclusion and poly(A) site usage, respectively._
 
-MAPP is implemented as a modular bioinformatics pipeline assembled in the [Snakemake] workflow management system. Functionally speaking, out tool is a composition of nine separate computational pipelines, each of which is dedicated to a different purpose (as presented in the scheme below) and can be executed fully on its own. In a structural sense a union of these nine modules generates an extensive dependency graph between subsequent Snakemake rules. To execute MAPP essentailly means to run all its sub-pipelines in a consecutive manner on a given dataset. Directed Acyclic Graph (DAG) representation of the whole workflow is additionally available [here](images/rulegraph.png).
+MAPP is implemented as a modular bioinformatics pipeline assembled in the [Snakemake] workflow management system. Functionally speaking, MAPP is a composition of nine separate computational pipelines, each of which is dedicated to a different purpose (as presented in the scheme below) and can be executed fully on its own. In a structural sense a union of these nine modules generates an extensive dependency graph between subsequent Snakemake rules. To execute MAPP essentailly means to run all its sub-pipelines in a consecutive manner on a given dataset. Directed Acyclic Graph (DAG) representation of the whole workflow is additionally available [here](images/rulegraph.png).
 
 <div align="center">
 <img src="images/mapp_workflow.png" style="display: block; margin: 0 auto" width="90%" />
@@ -113,10 +113,10 @@ bash scripts/download-and-run-on-example-data.sh --cores 8
 The output of the MAPP test run based on the demo data should contain a final report `report.html` file inside the following directory which one may open with an internet browser:
 
 ```bash
-summary/index.html
+summary/report.html
 ```
 
-Please note that the output of the demo data does not make any biological sense but is only there to test wheter MAPP produce the final `index.html` file on your system, confirming that all MAPP modules have been installated correctly and run properly on your system.
+Please note that the output of the demo data does not make any biological sense but is only there to test wheter MAPP produce the final `report.html` file on your system, confirming that all MAPP modules have been installated correctly and run properly on your system.
 
 **The output of the MAPP demo run should look comparable to the following [output example](https://gruber-sciencelab.github.io/MAPP-Demo-Output/index.html).**
 
