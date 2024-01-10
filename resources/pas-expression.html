@@ -23,7 +23,7 @@
   </a>
   &nbsp;
   <a href="pas-expression.html" style="text-decoration: none;">
-    <button style="width: 180px; height: 40px; border: 2px solid rgb(154, 33, 33); background-color: #ffffff">Poly(A) Site Expressions</button>
+    <button style="width: 180px; height: 40px; border: 2px solid #33a02c; background-color: #ffffff">Poly(A) Site Expressions</button>
   </a>
   <br>
   <br>
@@ -63,17 +63,17 @@
     <br>
     <b>pas</b>&nbsp;:&nbsp;Poly(A)-sites' ID (as in the PAS Atlas)
     <br>
-    <b>score</b>&nbsp;:&nbsp;???
+    <b>score</b>&nbsp;:&nbsp;minimal support level for a given Poly(A) site
     <br>
     <b>strand</b>&nbsp;:&nbsp;sequence strand
     <br>
-    <b>polyAsite_exon_idx</b>&nbsp;:&nbsp;index of the Poly(A) site on a specific terminal exon
+    <b>polyAsite_exon_idx</b>&nbsp;:&nbsp;Poly(A) site's index on a specific terminal exon
     <br>
-    <b>nr_polyAsites_on_exon</b>&nbsp;:&nbsp;total number of poly(A) sites on a specific terminal exon
+    <b>nr_polyAsites_on_exon</b>&nbsp;:&nbsp;total number of Poly(A) sites on a specific terminal exon
     <br>
     <b>exon</b>&nbsp;:&nbsp;unique terminal exon ID
     <br>
-    <b>gene</b>&nbsp;:&nbsp;ENSEMBL transcript ID for this specific terminal exon
+    <b>gene</b>&nbsp;:&nbsp;transcript ID of this specific terminal exon
     <br>
     <br>
     Each of the next columns stores TPM values of
@@ -81,69 +81,88 @@
     <br>
     <br>
     <center>
-      <table border="2">
+      <table border="2" style="border-collapse: collapse;">
         <tr>
-          <th style="padding: 5px;"><b></b></th>
-          <th style="padding: 5px;"><b>chrom</b></th>
-          <th style="padding: 5px;"><b>start</b></th>
-          <th style="padding: 5px;"><b>end</b></th>
-          <th style="padding: 5px;"><b>pas</b></th>
-          <th style="padding: 5px;"><b>score</b></th>
-          <th style="padding: 5px;"><b>strand</b></th>
-          <th style="padding: 5px;"><b>polyAsite_exon_idx</b></th>
-          <th style="padding: 5px;"><b>nr_polyAsites_on_exon</b></th>
-          <th style="padding: 5px;"><b>exon</b></th>
-          <th style="padding: 5px;"><b>gene</b></th>
-          <th style="padding: 5px;"><b>Sample1</b></th>
-          <th style="padding: 5px;"><b>Sample2</b></th>
+          <th style="text-align: center; padding: 5px;"><b></b></th>
+          <th style="text-align: center; padding: 5px;"><b>chrom</b></th>
+          <th style="text-align: center; padding: 5px;"><b>start</b></th>
+          <th style="text-align: center; padding: 5px;"><b>end</b></th>
+          <th style="text-align: center; padding: 5px;"><b>pas</b></th>
+          <th style="text-align: center; padding: 5px;"><b>score</b></th>
+          <th style="text-align: center; padding: 5px;"><b>strand</b></th>
+          <th style="text-align: center; padding: 5px;"><b>polyAsite_exon_idx</b></th>
+          <th style="text-align: center; padding: 5px;"><b>nr_polyAsites_on_exon</b></th>
+          <th style="text-align: center; padding: 5px;"><b>exon</b></th>
+          <th style="text-align: center; padding: 5px;"><b>gene</b></th>
+          <th style="text-align: center; padding: 5px;"><b>Sample1</b></th>
+          <th style="text-align: center; padding: 5px;"><b>Sample2</b></th>
+          <th style="text-align: center; padding: 5px;"><b>...</b></th>
         </tr>
         <tr>
-          <td style="padding: 5px;"><b>PAS1</b></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"><b>PAS1</b></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
         </tr>
         <tr>
-          <td style="padding: 5px;"><b>PAS2</b></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"><b>PAS2</b></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
         </tr>
         <tr>
-          <td style="padding: 5px;"><b>PAS3</b></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
-          <td style="padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"><b>PAS3</b></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
         </tr>
-      </table>
-      
+        <tr>
+          <td style="text-align: center; padding: 5px;"><b>...</b></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+        </tr>
+      </table>      
     </center>
   </div>
 <br>
