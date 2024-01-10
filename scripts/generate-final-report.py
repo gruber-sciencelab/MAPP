@@ -74,41 +74,35 @@ def main():
         os.path.join(options.summary_directory, "main-table.tsv"), sep="\t"
     )
     summary = summary.round(3).fillna("NA")
-    print(summary)
-
-    # set distinct columns width parameters for the table
-    # depending on if we run on kmers or pwms
-    if configfile["CSM_matrix_type"] == "kmers":
-        text_col_width = "10"
-        heatmap_col_width = "50"
-        heatmap_img_scaling = "30"
-    else:
-        assert configfile["CSM_matrix_type"] == "pwms"
-        text_col_width = "10"
-        heatmap_col_width = "40"
-        seqlogo_col_width = "10"
-        heatmap_img_scaling = "30"
-        seqlogo_img_scaling = "50"
 
     # render the HTML report template MANUALLY (for now)
     rendered_html = []
-    for _ in range(11):
+    for _ in range(43):
         rendered_html.append(template_html[_])
-    rendered_html[8] = "<h3>" + configfile["MAPP_analysis_name"] + "</h3>"
-    rendered_html.append("<table>")
+    rendered_html[10] = "<h3>" + configfile["MAPP_analysis_name"] + "</h3>"
+    rendered_html.append("<center>")
+    rendered_html.append('<table style="width: 50%; background-color: #ffffff; border: 2px solid black;">')
     rendered_html.append("  <colgroup>")
-    if configfile["CSM_matrix_type"] == "pwms":
-        rendered_html.append('    <col style="width:' + seqlogo_col_width + '%">')
-    rendered_html.append('    <col style="width:' + text_col_width + '%">')
-    rendered_html.append('    <col style="width:' + text_col_width + '%">')
-    rendered_html.append('    <col style="width:' + text_col_width + '%">')
-    rendered_html.append('    <col style="width:' + text_col_width + '%">')
-    rendered_html.append('    <col style="width:' + text_col_width + '%">')
-    rendered_html.append('    <col style="width:' + heatmap_col_width + '%">')
+    if configfile["CSM_matrix_type"] == "kmers":
+        rendered_html.append('    <col style="width:15%">')
+        rendered_html.append('    <col style="width:15%">')
+        rendered_html.append('    <col style="width:15%">')
+        rendered_html.append('    <col style="width:15%">')
+        rendered_html.append('    <col style="width:15%">')
+        rendered_html.append('    <col style="width:25%">')
+    else:
+        configfile["CSM_matrix_type"] == "pwms"
+        rendered_html.append('    <col style="width:20%">')
+        rendered_html.append('    <col style="width:12%">')
+        rendered_html.append('    <col style="width:12%">')
+        rendered_html.append('    <col style="width:12%">')
+        rendered_html.append('    <col style="width:12%">')
+        rendered_html.append('    <col style="width:12%">')
+        rendered_html.append('    <col style="width:20%">')
     rendered_html.append("  </colgroup>")
     rendered_html.append("  <tr>")
     for h in summary.columns.values:
-        rendered_html.append("    <th>" + h + "</th>")
+        rendered_html.append('    <th style="padding-top: 10px; padding-bottom: 10px;">' + h + '</th>')
     rendered_html.append("  </tr>")
     for i, row in summary.iterrows():
         rendered_html.append("  <tr>")
@@ -143,13 +137,15 @@ def main():
             + "><img src="
             + row["Activity Map"]
             + ' width="'
-            + heatmap_img_scaling
+            + "100"
             + '%"></a></td>'
         )
         rendered_html.append("  </tr>")
     rendered_html.append("</table>")
-    for _ in range(12, len(template_html)):
-        rendered_html.append(template_html[_])
+    rendered_html.append("</center>")
+    rendered_html.append("<br>")
+    rendered_html.append("</body>")
+    rendered_html.append("</html>")
 
     with open(os.path.join(options.summary_directory, "report.html"), "w") as report:
         for line in rendered_html:
@@ -161,6 +157,41 @@ def main():
         os.path.join(options.summary_directory, "font-awesome-4.7.0"),
     )
 
+    # copy the project logo
+    shutil.copy(
+        os.path.join(options.resources_directory, "mapp_logo.png"),
+        os.path.join(options.summary_directory, "mapp_logo.png"),
+    )
+
+    # copy the subsites
+    shutil.copy(
+        os.path.join(options.resources_directory, "gene-expression.html"),
+        os.path.join(options.summary_directory, "gene-expression.html"),
+    )
+    shutil.copy(
+        os.path.join(options.resources_directory, "transcript-expression.html"),
+        os.path.join(options.summary_directory, "transcript-expression.html"),
+    )
+    shutil.copy(
+        os.path.join(options.resources_directory, "exon-inclusion.html"),
+        os.path.join(options.summary_directory, "exon-inclusion.html"),
+    )
+    shutil.copy(
+        os.path.join(options.resources_directory, "pas-expression.html"),
+        os.path.join(options.summary_directory, "pas-expression.html"),
+    )
+    shutil.copy(
+        os.path.join(options.resources_directory, "activities-3ss.html"),
+        os.path.join(options.summary_directory, "activities-3ss.html"),
+    )
+    shutil.copy(
+        os.path.join(options.resources_directory, "activities-5ss.html"),
+        os.path.join(options.summary_directory, "activities-5ss.html"),
+    )
+    shutil.copy(
+        os.path.join(options.resources_directory, "activities-pas.html"),
+        os.path.join(options.summary_directory, "activities-pas.html"),
+    )
 
 ##############################################################################
 

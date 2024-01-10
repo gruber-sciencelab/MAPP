@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MAPP reports</title>
+</head>
+<body style="background-color: rgb(219, 219, 219)">
+<br>
+<center>
+  <img src=mapp_logo.png width="4%">
+  <h1>MAPP Report</h1>
+  <h3>Test run with reduced parameters on a sampled dataset</h3>
+  <br>
+  <a href="gene-expression.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Gene Expression</button>
+  </a>
+  &nbsp;
+  <a href="transcript-expression.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid #33a02c; background-color: #ffffff">Transcript Expression</button>
+  </a>
+  &nbsp;
+  <a href="exon-inclusion.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Exon Inclusion Fractions</button>
+  </a>
+  &nbsp;
+  <a href="pas-expression.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Poly(A) Site Expressions</button>
+  </a>
+  <br>
+  <br>
+  <a href="activities-3ss.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">3'SS Activities & Counts</button>
+  </a>
+  &nbsp;
+  <a href="activities-5ss.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">5'SS Activities & Counts</button>
+  </a>
+  &nbsp;
+  <a href="activities-pas.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">PAS Activities & Counts</button>
+  </a>
+  </center>
+<br>
+<br>
+<center>
+  <div style="width: 50%; text-align: left; border: 2px solid black; background-color: #ffffff; padding: 20px; line-height: 1.5;">
+    Transcript expression has been quantified with the Salmon tool
+    (<a href="https://www.nature.com/articles/nmeth.4197">Patro R. et al.</a>).
+    <br>
+    <br>
+    Expression scores are stored as Transcripts-per-Milion (TPM) values in a tab-separated format (TSV) table.
+    Please be aware that the TPM scores should not be used to directly compare transcript expression across
+    distinct RNA-Seq samples. 
+    <br>
+    <br>
+    Each row in the expression table represents a single, unique transcript. The first column
+    corresponds to a transcript ID. Each of the next columns stores TPM values of
+    a specific RNA-Seq sample, as in the scheme below:
+    <br>
+    <br>
+    <center>
+      <table border="2" style="border-collapse: collapse;">
+        <tr>
+          <th style="text-align: center; padding: 5px;"><b></b></th>
+          <th style="text-align: center; padding: 5px;"><b>Sample1</b></th>
+          <th style="text-align: center; padding: 5px;"><b>Sample2</b></th>
+          <th style="text-align: center; padding: 5px;"><b>...</b></th>   
+        </tr>
+        <tr>
+          <td style="text-align: center; padding: 5px;"><b>Transcript1</b></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+        </tr>
+        <tr>
+          <td style="text-align: center; padding: 5px;"><b>Transcript2</b></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+        </tr>
+        <tr>
+          <td style="text-align: center; padding: 5px;"><b>Transcript3</b></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+        </tr>
+        <tr>
+          <td style="text-align: center; padding: 5px;"><b>...</b></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+          <td style="text-align: center; padding: 5px;"></td>
+        </tr>
+      </table>
+    </center>
+  </div>
+<br>
+<a href="report.html" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Main Menu</button>
+</a>
+&nbsp;
+<a href="results/quantification-transcripts.tsv" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Download Table</button>
+</a>
+</center>
+</body>
+</html>
