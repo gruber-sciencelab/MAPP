@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MAPP reports</title>
+</head>
+<body style="background-color: rgb(219, 219, 219)">
+<br>
+<center>
+  <img src=mapp_logo.png width="4%">
+  <h1>MAPP Report</h1>
+  <h3>Test run with reduced parameters on a sampled dataset</h3>
+  <br>
+  <a href="gene-expression.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Gene Expression</button>
+  </a>
+  &nbsp;
+  <a href="transcript-expression.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Transcript Expression</button>
+  </a>
+  &nbsp;
+  <a href="exon-inclusion.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Exon Inclusion Fractions</button>
+  </a>
+  &nbsp;
+  <a href="pas-expression.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Poly(A) Site Expressions</button>
+  </a>
+  <br>
+  <br>
+  <a href="activities-3ss.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">3'SS Activities & Counts</button>
+  </a>
+  &nbsp;
+  <a href="activities-5ss.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid #33a02c; background-color: #ffffff">5'SS Activities & Counts</button>
+  </a>
+  &nbsp;
+  <a href="activities-pas.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">PAS Activities & Counts</button>
+  </a>
+  </center>
+<br>
+<br>
+<center>
+  <div style="width: 60%; text-align: left; border: 2px solid black; background-color: #ffffff; padding: 20px; line-height: 1.5;">
+    This is a summary report for a MAPP run.
+    Motif count matrices are located under: <code>../modules/CREATE_SITECOUNT_MATRICES/output</code>,
+    unless external pre-computer resources were specified for this specific workflow execution.
+    In such case please refer to the pipeline's configuration file and inspect the paths provided
+    under the field: <code>MAE_sitecount_matrices</code>.
+    <br>
+    <br>
+    Fitted motif activities as well as calculated activity z-scores and their statistical significance
+    are stored in a tab-separated formatted (TSV) table.
+    Rows of this table denote various sequence motifs in specific sliding windows whereas subsequent columns follow the
+    structure below:
+    <br>
+    <br>
+    <b>ID</b>&nbsp;:&nbsp;unique ID of a sequence motif in a specific sliding window
+    <br>
+    <b>activities_{sampleID}</b>&nbsp;:&nbsp;motif activities in distinct RNA-Seq samples
+    <br>
+    <b>deltas_{sampleID}</b>&nbsp;:&nbsp;standard deviations of motif activities
+    <br>
+    <b>zscores_{sampleID}</b>&nbsp;:&nbsp;z-scores of motif activities
+    <br>
+    <b>combined.Zscore</b>&nbsp;:&nbsp;overall z-score for a given motif, combined over all samples
+    <br>
+    <b>regions_present_fraction</b>&nbsp;:&nbsp;fraction of sites for which the motif was present in a specific window
+    <br>
+    <b>region</b>&nbsp;:&nbsp;sliding window ID
+    <br>
+    <b>motif</b>&nbsp;:&nbsp;short sequence motif
+    <br>
+    <b>standard_zscores_{sampleID}</b>&nbsp;:&nbsp;standardised z-scores of motif activities
+    <br>
+    <b>pval_{sampleID}</b>&nbsp;:&nbsp;standardised p-values of motif activities
+    <br>
+    <b>corr_pval_{sampleID}</b>&nbsp;:&nbsp;p-values corrected for multiple hypothesis testing
+    <br>
+    <b>combined.standard.Zscore</b>&nbsp;:&nbsp;combined standardised z-scores
+    <br>
+    <b>max.abs.standard.Zscore</b>&nbsp;:&nbsp;maximum absolute standardised z-score
+    <br>
+    <b>significance-marker</b>&nbsp;:&nbsp;statistical significance marker for this motif in this sliding window
+    <br>
+    <br>
+  </div>
+<br>
+<a href="report.html" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Main Menu</button>
+</a>
+&nbsp;
+<a href="results/results-5ss.tsv" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Download Table</button>
+</a>
+</center>
+</body>
+</html>
