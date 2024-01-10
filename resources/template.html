@@ -1,28 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MAPP report</title>
+  <title>MAPP</title>
 </head>
-<body>
-
-<h1>MAPP report</h1>
+<body style="background-color: rgb(219, 219, 219)">
+<br>
+<center>
+<img src=mapp_logo.png width="4%">
+<h1>MAPP Report</h1>
 <h3>{{AnalysisTitle}}</h3>
 <br>
-
-{{MainTable}}
-
+<a href="gene-expression.html" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Gene Expression</button>
+</a>
+&nbsp;
+<a href="transcript-expression.html" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Transcript Expression</button>
+</a>
+&nbsp;
+<a href="exon-inclusion.html" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Exon Inclusion Fractions</button>
+</a>
+&nbsp;
+<a href="pas-expression.html" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Poly(A) Site Expressions</button>
+</a>
 <br>
-<hr>
-<p>For more information feel free to inspect the <a href="results/">results directory</a> manually.</p>
-<p>Apart from the heatmaps it contains:</p>
-<ul>
-  <li>BED-formatted coordinates of 3'ss, 5'ss & pas</li>
-  <li>TSV table with exon inclusion fractions</li>
-  <li>TSV tables with pas expression and relative positions</li>
-  <li>TSV tables with genes and transcripts quantifications</li>
-  <li>TSV tables with motif activities around 3'ss, 5'ss & pas</li>
-  <li>TXT lists of selected top motifs acting around 3'ss, 5'ss & pas</li>
-</ul>
-
-</body>
-</html>
+<br>
+<a href="activities-3ss.html" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">3'SS Activities & Counts</button>
+</a>
+&nbsp;
+<a href="activities-5ss.html" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">5'SS Activities & Counts</button>
+</a>
+&nbsp;
+<a href="activities-pas.html" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">PAS Activities & Counts</button>
+</a>
+</center>
+<br>
+<br>
