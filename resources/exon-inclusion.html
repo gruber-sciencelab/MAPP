@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MAPP reports</title>
+</head>
+<body style="background-color: rgb(219, 219, 219)">
+<br>
+<center>
+  <img src=mapp_logo.png width="4%">
+  <h1>MAPP Report</h1>
+  <h3>Test run with reduced parameters on a sampled dataset</h3>
+  <br>
+  <a href="gene-expression.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Gene Expression</button>
+  </a>
+  &nbsp;
+  <a href="transcript-expression.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Transcript Expression</button>
+  </a>
+  &nbsp;
+  <a href="exon-inclusion.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid rgb(154, 33, 33); background-color: #ffffff">Exon Inclusion Fractions</button>
+  </a>
+  &nbsp;
+  <a href="pas-expression.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Poly(A) Site Expressions</button>
+  </a>
+  <br>
+  <br>
+  <a href="activities-3ss.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">3'SS Activities & Counts</button>
+  </a>
+  &nbsp;
+  <a href="activities-5ss.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">5'SS Activities & Counts</button>
+  </a>
+  &nbsp;
+  <a href="activities-pas.html" style="text-decoration: none;">
+    <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">PAS Activities & Counts</button>
+  </a>
+  </center>
+<br>
+<br>
+<center>
+  <div style="width: 50%; text-align: left; border: 2px solid black; background-color: #ffffff; padding: 20px; line-height: 1.5;">
+    Cassette exon inclusion is represented as a ratio of expression
+    for transcripts which include a specific exon
+    to all those transcripts which could have possibly included it.
+    Numerators and denominators of these ratios are stored separately in a tab-separated format (TSV) table.
+    Each row in the expression table represents a single cassette exon. The first column
+    specifies exon coordinates in a BED format.
+    Each of the next columns stores aggregated TPM values for
+    specific RNA-Seq samples. Columns with numerators of the inclusion fraction ratios are
+    denoted with an "_included" suffix whereas denominators are marked with "_total".
+    Please see the scheme below:
+    <br>
+    <br>
+    <center>
+      <table border="2">
+        <tr>
+          <th style="padding: 5px;"><b></b></th>
+          <th style="padding: 5px;"><b>Sample1_included</b></th>
+          <th style="padding: 5px;"><b>Sample2_included</b></th>
+          <th style="padding: 5px;"><b>Sample1_total</b></th>
+          <th style="padding: 5px;"><b>Sample2_total</b></th>
+        </tr>
+        <tr>
+          <td style="padding: 5px;"><b>Exon1</b></td>
+          <td style="padding: 5px;"></td>
+          <td style="padding: 5px;"></td>
+          <td style="padding: 5px;"></td>
+          <td style="padding: 5px;"></td>
+        </tr>
+        <tr>
+          <td style="padding: 5px;"><b>Exon2</b></td>
+          <td style="padding: 5px;"></td>
+          <td style="padding: 5px;"></td>
+          <td style="padding: 5px;"></td>
+          <td style="padding: 5px;"></td>
+        </tr>
+        <tr>
+          <td style="padding: 5px;"><b>Exon3</b></td>
+          <td style="padding: 5px;"></td>
+          <td style="padding: 5px;"></td>
+          <td style="padding: 5px;"></td>
+          <td style="padding: 5px;"></td>
+        </tr>
+      </table>
+      
+    </center>
+  </div>
+<br>
+<a href="report.html" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Main Menu</button>
+</a>
+&nbsp;
+<a href="results/exon-inclusion-table.tsv" style="text-decoration: none;">
+  <button style="width: 180px; height: 40px; border: 2px solid black; background-color: #ffffff">Download Table</button>
+</a>
+</center>
+</body>
+</html>
