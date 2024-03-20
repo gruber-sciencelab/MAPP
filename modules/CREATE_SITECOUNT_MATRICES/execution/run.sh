@@ -178,7 +178,6 @@ case "$ENV$TECH" in
     localconda)
         snakemake \
             --configfile="$CONFIGFILE" \
-            --cores 16 \
             --profile="../profiles/local-conda"
         ;;
     localsingularity)
