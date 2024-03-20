@@ -69,82 +69,87 @@ def parse_arguments():
 def main():
     """Main body of the script."""
 
-    # test that the input BED-file indeed contains coordinates for single sites
-    with open(options.bed) as bed_file:
-        bed_lines = bed_file.read().splitlines()
-    for line in bed_lines:
-        line_parsed = line.split("\t")
-        assert int(line_parsed[2]) - int(line_parsed[1]) == 1
-
     outdir = options.outdir
 
-    # parse the relative coordinates from the encoded window name
-    coords = [i[1:].split("to") for i in options.window.split(".")]
-    coords = [coords[0][0], coords[0][1], coords[1][0], coords[1][1]]
+    with open(options.bed) as bed_file:
+        bed_lines = bed_file.read().splitlines()
 
-    # Construct bash commands to extract region coordinates into bed
-    if int(coords[0]) and not int(coords[3]):  # whole window upstream the site
-        assert not int(coords[2])
-        beg = coords[0]
-        end = coords[1]
-        command = (
-            "cat "
-            + options.bed
-            + ' | awk -F "\\t" \
-        \'{{ if ($6 == "+") print $1"\\t"$2-'
-            + beg
-            + '"\\t"$2-'
-            + end
-            + '"\\t"$4"\\t"$5"\\t"$6; else if ($6 == "-") print $1"\\t"$3+'
-            + end
-            + '"\\t"$3+'
-            + beg
-            + '"\\t"$4"\\t"$5"\\t"$6}}\' \
-        1> '
-            + os.path.join(outdir, "coordinates.bed")
-        )
+    if options.window == "FULL":
+        command = "cp " + options.bed + " " + os.path.join(outdir, "coordinates.bed")
 
-    elif int(coords[3]) and not int(coords[0]):  # whole window downstream the site
-        assert not int(coords[1])
-        beg = coords[2]
-        end = coords[3]
-        command = (
-            "cat "
-            + options.bed
-            + ' | awk -F "\\t" \
-        \'{{ if ($6 == "+") print $1"\\t"$2+'
-            + beg
-            + '"\\t"$2+'
-            + end
-            + '"\\t"$4"\\t"$5"\\t"$6; else if ($6 == "-") print $1"\\t"$3-'
-            + end
-            + '"\\t"$3-'
-            + beg
-            + '"\\t"$4"\\t"$5"\\t"$6}}\' \
-        1> '
-            + os.path.join(outdir, "coordinates.bed")
-        )
+    else:
+        # test that the input BED-file indeed contains coordinates for single sites
+        for line in bed_lines:
+            line_parsed = line.split("\t")
+            assert int(line_parsed[2]) - int(line_parsed[1]) == 1
 
-    else:  # window goes through the site
-        assert not int(coords[1]) and not int(coords[2])
-        beg = coords[0]
-        end = coords[3]
-        command = (
-            "cat "
-            + options.bed
-            + ' | awk -F "\\t" \
-        \'{{ if ($6 == "+") print $1"\\t"$2-'
-            + beg
-            + '"\\t"$2+'
-            + end
-            + '"\\t"$4"\\t"$5"\\t"$6; else if ($6 == "-") print $1"\\t"$3-'
-            + end
-            + '"\\t"$3+'
-            + beg
-            + '"\\t"$4"\\t"$5"\\t"$6}}\' \
-        1> '
-            + os.path.join(outdir, "coordinates.bed")
-        )
+        # parse the relative coordinates from the encoded window name
+        coords = [i[1:].split("to") for i in options.window.split(".")]
+        coords = [coords[0][0], coords[0][1], coords[1][0], coords[1][1]]
+
+        # Construct bash commands to extract region coordinates into bed
+        if int(coords[0]) and not int(coords[3]):  # whole window upstream the site
+            assert not int(coords[2])
+            beg = coords[0]
+            end = coords[1]
+            command = (
+                "cat "
+                + options.bed
+                + ' | awk -F "\\t" \
+            \'{{ if ($6 == "+") print $1"\\t"$2-'
+                + beg
+                + '"\\t"$2-'
+                + end
+                + '"\\t"$4"\\t"$5"\\t"$6; else if ($6 == "-") print $1"\\t"$3+'
+                + end
+                + '"\\t"$3+'
+                + beg
+                + '"\\t"$4"\\t"$5"\\t"$6}}\' \
+            1> '
+                + os.path.join(outdir, "coordinates.bed")
+            )
+
+        elif int(coords[3]) and not int(coords[0]):  # whole window downstream the site
+            assert not int(coords[1])
+            beg = coords[2]
+            end = coords[3]
+            command = (
+                "cat "
+                + options.bed
+                + ' | awk -F "\\t" \
+            \'{{ if ($6 == "+") print $1"\\t"$2+'
+                + beg
+                + '"\\t"$2+'
+                + end
+                + '"\\t"$4"\\t"$5"\\t"$6; else if ($6 == "-") print $1"\\t"$3-'
+                + end
+                + '"\\t"$3-'
+                + beg
+                + '"\\t"$4"\\t"$5"\\t"$6}}\' \
+            1> '
+                + os.path.join(outdir, "coordinates.bed")
+            )
+
+        else:  # window goes through the site
+            assert not int(coords[1]) and not int(coords[2])
+            beg = coords[0]
+            end = coords[3]
+            command = (
+                "cat "
+                + options.bed
+                + ' | awk -F "\\t" \
+            \'{{ if ($6 == "+") print $1"\\t"$2-'
+                + beg
+                + '"\\t"$2+'
+                + end
+                + '"\\t"$4"\\t"$5"\\t"$6; else if ($6 == "-") print $1"\\t"$3-'
+                + end
+                + '"\\t"$3+'
+                + beg
+                + '"\\t"$4"\\t"$5"\\t"$6}}\' \
+            1> '
+                + os.path.join(outdir, "coordinates.bed")
+            )
 
     # call bash cat->awk command to extract absolute coordinates of the window
     os.system(command)
