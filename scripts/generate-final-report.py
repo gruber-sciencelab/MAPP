@@ -113,7 +113,7 @@ def main():
                 + "><img src="
                 + row["Sequence Logos"]
                 + ' width="'
-                + seqlogo_img_scaling
+                + "100"
                 + '%"></a></td>'
             )
         rendered_html.append(
