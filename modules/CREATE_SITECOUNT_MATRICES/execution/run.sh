@@ -178,6 +178,7 @@ case "$ENV$TECH" in
     localconda)
         snakemake \
             --configfile="$CONFIGFILE" \
+            --cores 16 \
             --profile="../profiles/local-conda"
         ;;
     localsingularity)
@@ -200,20 +201,7 @@ case "$ENV$TECH" in
     sgeconda)
         snakemake \
             --configfile="$CONFIGFILE" \
-            --snakefile ../Snakefile \
-            --use-conda \
-            --conda-prefix="$CONDAPREFIX" \
-            --cluster "qsub -r y -q scc -pe smp {threads} -l h_rt=168:00:00 -l h_vmem={resources.mem_mb}M -e {params.LOG_cluster_log}" \
-            --jobs 4096 \
-            --cores all \
-            --retries 1 \
-            --default-resources mem_mb=32000*attempt disk_mb=32000*attempt \
-            --printshellcmds \
-            --rerun-incomplete \
-            --jobscript "../../../execution/sge-jobscript.sh" \
-            --conda-frontend mamba \
-            --keep-going \
-            --latency-wait 600 \
+            --profile="../profiles/sge-conda"
         ;;
     sgesingularity)
         echo "Singularity technology is not supported for Grid Engine yet."
