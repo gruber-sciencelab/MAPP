@@ -450,7 +450,7 @@ CSM_regions_files:
   "pas": "{tandem_pas_representative_sites_coordinates}"
   "3ss": "{_3ss_coordinates}"
   "5ss": "{_5ss_coordinates}"
-CSM_additional_regions_files: {}
+CSM_additional_regions_files: "{{}}"
 CSM_window_step: {int(template["window_size"]/2)}
 CSM_matrix_type: "{template["matrix_type"]}"
 CSM_kmer_min: {template["k_min"]}
