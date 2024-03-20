@@ -35,6 +35,10 @@ CSM_regions_files:
   "3ss": "/home/runner/work/MAPP/MAPP/.test/integration/module_CSM/3ss.bed"
   "5ss": "/home/runner/work/MAPP/MAPP/.test/integration/module_CSM/5ss.bed"
 
+# paths to the bed-formatted additional whole regions
+CSM_additional_regions_files:
+  "full_region_test": "/home/runner/work/MAPP/MAPP/.test/integration/module_CSM/full_region.bed"
+
 # sliding window configuration: window size and slide step
 CSM_window_size: "50"
 CSM_window_step: "25"
