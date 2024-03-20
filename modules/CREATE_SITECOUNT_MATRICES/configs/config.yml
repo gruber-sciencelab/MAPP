@@ -37,9 +37,7 @@ CSM_regions_files:
 
 # paths to the bed-formatted additional whole regions
 CSM_additional_regions_files:
-  "3pUTR_minlen150_prefix": "/data/scc2/ag-gruber-ext/wsciekly.maciek/mapp-stability-analysis/singular-sites-margin25-minutrlen150/clean-sites-prefix-UTR.bed"
-  "3pUTR_minlen150_total": "/data/scc2/ag-gruber-ext/wsciekly.maciek/mapp-stability-analysis/singular-sites-margin25-minutrlen150/clean-sites-total-UTR.bed"
-  "3pUTR_minlen150_suffix": "/data/scc2/ag-gruber-ext/wsciekly.maciek/mapp-stability-analysis/singular-sites-margin25-minutrlen150/clean-sites-suffix-UTR.bed"
+  "3pUTR_minlen150_total": "/data/scc2/ag-gruber-ext/MAPP_paper/supplementary_package/mapp-stability-analysis-BACKUP/singular-sites-margin25-minutrlen150/clean-sites-total-UTR.bed"
 
 # sliding window configuration: window size and slide step
 CSM_window_size: "50"
@@ -51,7 +49,7 @@ CSM_matrix_type: "kmers"
 # options for "kmers" sitecount matrices:
 # inclusive ends specification for the range of k-mers sizes = [kmer_min,kmer_max]
 CSM_kmer_min: "3"
-CSM_kmer_max: "3"
+CSM_kmer_max: "5"
 
 # options for "pwms" sitecount matrices:
 # path to the directory with TRANSFAC-formatted PWM files

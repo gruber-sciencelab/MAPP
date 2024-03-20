@@ -1,5 +1,5 @@
 snakefile: "../Snakefile"
-cores: 64
+cores: 1
 printshellcmds: true
 rerun-incomplete: true
 use-conda: true

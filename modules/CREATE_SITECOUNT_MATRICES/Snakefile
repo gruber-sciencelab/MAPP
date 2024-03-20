@@ -97,18 +97,15 @@ def CSM_get_abspath(p):
     """
     return(p if p[0] == os.sep else os.path.abspath(p))
 
-
-
-
-
-def CSM_helper(wildcards):
+def CSM_region_helper(wildcards):
+    """
+    Helper function to determine wheter a region is supposed to be
+    analyzed in full or over windows
+    """
     if wildcards.CSM_region_id in config["CSM_regions_files"]:
         return config["CSM_regions_files"][wildcards.CSM_region_id]
     else:
         return config["CSM_additional_regions_files"][wildcards.CSM_region_id]
-
-
-
 
 ##############################################################################
 ### Target rule with final output of the pipeline
@@ -201,7 +198,7 @@ rule CSM_extract_window_coord_and_sequence:
             "{CSM_outdir}",
             "CSM_outdir"
         ),
-        BED_region = lambda wildcards: CSM_helper(wildcards),
+        BED_region = lambda wildcards: CSM_region_helper(wildcards),
         FASTA_genome = config["CSM_genomic_sequence"],
         SCRIPT_ = os.path.join(
             config["CSM_scripts_dir"],
