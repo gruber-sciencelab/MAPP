@@ -35,6 +35,9 @@ CSM_regions_files:
   "3ss": ""
   "5ss": ""
 
+# paths to the bed-formatted additional whole regions
+CSM_additional_regions_files: {}
+
 # sliding window configuration: window size and slide step
 CSM_window_size: "50"
 CSM_window_step: "25"
