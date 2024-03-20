@@ -18,10 +18,10 @@ CSM_scripts_dir: "../scripts"
 
 # path for the output directory
 # (relative to the 'execution' directory)
-CSM_outdir: "../3pUTR_kmers_3to7mers"
+CSM_outdir: "../output"
 
 # path to the genomic sequence in fasta format
-CSM_genomic_sequence: "/data/scc2/ag-gruber-ext/wsciekly.maciek/resources_ENSEMBL_hsa/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+CSM_genomic_sequence: ""
 
 # relative ranges around respective sites
 CSM_regions_ranges:
@@ -31,29 +31,28 @@ CSM_regions_ranges:
 
 # paths to the bed-formatted sites
 CSM_regions_files:
-  "polyA": "/data/scc2/ag-gruber-ext/wsciekly.maciek/mapp-precomputed-ase-tpa-csm/tpa_outdir_unstranded/tandem_pas.terminal_exons.representative_sites.bed"
-  "3ss": "/data/scc2/ag-gruber-ext/wsciekly.maciek/mapp-precomputed-ase-tpa-csm/ase_outdir_minlen0/3ss.bed"
-  "5ss": "/data/scc2/ag-gruber-ext/wsciekly.maciek/mapp-precomputed-ase-tpa-csm/ase_outdir_minlen0/5ss.bed"
+  "polyA": ""
+  "3ss": ""
+  "5ss": ""
 
 # paths to the bed-formatted additional whole regions
-CSM_additional_regions_files:
-  "3pUTR_minlen150_total": "/data/scc2/ag-gruber-ext/MAPP_paper/supplementary_package/mapp-stability-analysis-BACKUP/singular-sites-margin25-minutrlen150/clean-sites-total-UTR.bed"
+CSM_additional_regions_files: {}
 
 # sliding window configuration: window size and slide step
 CSM_window_size: "50"
 CSM_window_step: "25"
 
 # sitecount matrix type: "kmers" or "pwms" options available
-CSM_matrix_type: "kmers"
+CSM_matrix_type: "pwms"
 
 # options for "kmers" sitecount matrices:
 # inclusive ends specification for the range of k-mers sizes = [kmer_min,kmer_max]
 CSM_kmer_min: "3"
-CSM_kmer_max: "5"
+CSM_kmer_max: "6"
 
 # options for "pwms" sitecount matrices:
 # path to the directory with TRANSFAC-formatted PWM files
-CSM_pwm_directory: "/data/scc2/ag-gruber-ext/wsciekly.maciek/ATtRACT_hsa_clean/motifs"
+CSM_pwm_directory: ""
 
 # MotEvo parameter: prior probability for the background binding
 CSM_MotEvo_bg_binding_prior: 0.99
