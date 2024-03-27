@@ -8,7 +8,7 @@
 
 # MAPP (Motif Activity on Pre-mRNA Processing)
 
-MAPP is a computational method which enables identification of binding motifs for RNA-binding proteins (RBPs) that shape pre-mRNA processing under specific conditions, including physiological and pathological cellular states. It uncovers the most plausible regulators of transcripts' poly(A) sites usage as well as differential cassette exon inclusion as inferred from RNA-Seq data.
+MAPP is a computational method which enables identification of binding motifs for RNA-binding proteins (RBPs) that shape pre-mRNA processing under specific conditions, including physiological and pathological cellular states. It uncovers the most plausible regulators of transcripts' poly(A) sites usage as well as differential cassette exon inclusion as inferred from RNA sequencing (RNA-Seq) data.
 
 ## Table of Contents
 
